@@ -1,4 +1,5 @@
 import { request } from "../libs/request"
+import { logger } from "./logger"
 
 export interface EmvcoResult {
   valid: boolean
@@ -79,12 +80,14 @@ function getIdentifier() {
        window.wx.getStorage({
       key: 'account-binding-storage',
       success(res: any) {
+        logger.add('DEBUG', `activeAcc ${JSON.stringify(res.data)}`)
         resolve(res.data.activeAcc.identifier)
       },
       fail() {
         window.wx.getStorage({
           key: 'msisdn',
           success(res: any) {
+        logger.add('DEBUG', `custParam msisdn - ${JSON.stringify(res.data)}`)
             resolve(res.data.msisdn)
           }
         })
