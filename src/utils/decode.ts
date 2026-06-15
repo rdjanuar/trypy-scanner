@@ -80,8 +80,9 @@ function getIdentifier() {
        window.wx.getStorage({
       key: 'account-binding-storage',
       success(res: any) {
-        logger.add('DEBUG', `activeAcc - ${JSON.stringify(res.data.activeAcc, null, 2)}`)
-        resolve(res.data.activeAcc.identifier)
+        const parsedData = JSON.parse(res.data)
+        logger.add('DEBUG', `activeAcc - ${JSON.stringify(parsedData.state.activeAcc, null, 2)}`)
+        resolve(parsedData.state.activeAcc.identifier)
       },
       fail() {
         window.wx.getStorage({
