@@ -124,6 +124,8 @@ const paymentInfo = urlParams.get('payment_info')
         },
     })
   })
+  
+  alert(JSON.stringify(result))
     
   const url = result?.data?.raw?.payment_response?.checkout_url
 
