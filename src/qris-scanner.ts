@@ -69,17 +69,6 @@ export class QrisScanner extends LitElement {
       position: relative;
     }
 
-    .scanner-frame {
-      width: 250px;
-      height: 250px;
-      position: relative;
-      /* Box shadow to create dark overlay outside the frame */
-      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
-      border-radius: 12px;
-      border: 2px solid rgba(255, 255, 255, 0.5); /* Added border to prove frame exists */
-    }
-
-
     .floating-buttons {
       position: absolute;
       left: 0;
@@ -260,84 +249,107 @@ export class QrisScanner extends LitElement {
   @state()
   flashOn = false;
 
-  private qrScanner?: QrScanner;
+  @state()
+  errorMessage = '';
+
+  private mediaStream?: MediaStream;
+  private scanInterval?: ReturnType<typeof setInterval>;
+  private scanning = false;
 
   firstUpdated() {
     setTimeout(() => {
-      this.initScanner();
+      this.startCamera();
     }, 300);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.qrScanner?.destroy();
+    this.stopCamera();
   }
 
-  @state()
-  errorMessage = '';
-
-  @state()
-  debugInfo = '';
-
-  private initScanner() {
-    if (!this.videoElement) return;
-
-    // List cameras for debugging
-    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-      navigator.mediaDevices.enumerateDevices().then(devices => {
-        const cameras = devices.filter(d => d.kind === 'videoinput');
-        this.debugInfo = 'Cameras: ' + cameras.map(c => c.label || 'Unnamed Camera').join(', ');
-      }).catch(err => {
-        this.debugInfo = 'Could not list cameras: ' + err;
-      });
+  private async startCamera() {
+    if (!this.videoElement) {
+      this.errorMessage = 'Video element not found';
+      return;
     }
 
     try {
-      this.qrScanner = new QrScanner(
-        this.videoElement,
-          (result) => {
-          decode({
-            data: result.data
-          });
-          console.log('Decoded QR code:', result);
-          this.dispatchEvent(new CustomEvent('qr-scanned', { detail: result.data || result }));
-        },
-        {
-          highlightScanRegion: false,
-          highlightCodeOutline: false
-        }
-      );
-
-      this.qrScanner.start().catch((err) => {
-        console.error('Failed to start scanner with environment camera, trying user camera...', err);
-        this.errorMessage = String(err);
-        this.qrScanner?.setCamera('user').catch(fallbackErr => {
-           console.error('Failed to start user camera:', fallbackErr);
-           this.errorMessage = 'Camera Error: ' + fallbackErr;
-        });
+      this.mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
       });
-    } catch (e) {
-      this.errorMessage = 'Init Error: ' + e;
+
+      this.videoElement.srcObject = this.mediaStream;
+      await this.videoElement.play();
+
+      this.startQrScanning();
+    } catch (err) {
+      console.error('Camera error:', err);
+      try {
+        this.mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user' }
+        });
+        this.videoElement.srcObject = this.mediaStream;
+        await this.videoElement.play();
+        this.startQrScanning();
+      } catch (fallbackErr) {
+        this.errorMessage = 'Camera Error: ' + fallbackErr;
+      }
+    }
+  }
+
+  private startQrScanning() {
+    if (this.scanning) return;
+    this.scanning = true;
+
+    this.scanInterval = setInterval(async () => {
+      if (!this.videoElement || this.videoElement.readyState < 2) return;
+      try {
+        const result = await QrScanner.scanImage(this.videoElement, {
+          returnDetailedScanResult: true
+        });
+        if (result?.data) {
+          decode({ data: result.data });
+          console.log('Decoded QR code:', result.data);
+          this.dispatchEvent(new CustomEvent('qr-scanned', { detail: result.data }));
+        }
+      } catch {
+      }
+    }, 300);
+  }
+
+  private stopCamera() {
+    if (this.scanInterval) {
+      clearInterval(this.scanInterval);
+      this.scanInterval = undefined;
+    }
+    this.scanning = false;
+    if (this.mediaStream) {
+      this.mediaStream.getTracks().forEach(track => track.stop());
+      this.mediaStream = undefined;
     }
   }
 
   private toggleFlash() {
-    if (this.qrScanner) {
-      if (this.flashOn) {
-        this.qrScanner.turnFlashOff();
-        this.flashOn = false;
+    if (!this.mediaStream) return;
+    const track = this.mediaStream.getVideoTracks()[0];
+    if (!track) return;
+
+    try {
+      const capabilities = track.getCapabilities() as any;
+      if (capabilities?.torch) {
+        this.flashOn = !this.flashOn;
+        track.applyConstraints({ advanced: [{ torch: this.flashOn } as any] });
       } else {
-        this.qrScanner.turnFlashOn().then(() => {
-          this.flashOn = true;
-        }).catch(err => console.warn('Flash not supported', err));
+        console.warn('Torch not supported on this device');
       }
+    } catch (err) {
+      console.warn('Flash not supported', err);
     }
   }
 
   render() {
     return html`
-      ${this.errorMessage ? html`<div style="position: absolute; z-index: 999; color: white; background: rgba(255,0,0,0.8); padding: 20px; text-align: center; width: 100%; top: 40%; font-weight: bold; border-radius: 8px;">${this.errorMessage}</div>` : ''}
-      ${this.debugInfo ? html`<div style="position: absolute; z-index: 999; color: lime; background: rgba(0,0,0,0.8); padding: 10px; font-size: 11px; width: 100%; top: 0; left: 0;">${this.debugInfo}</div>` : ''}
+      ${this.errorMessage ? html`<div style="position: absolute; z-index: 999; color: white; background: rgba(255,0,0,0.8); padding: 16px; text-align: center; width: 100%; top: 40%; font-weight: bold;">${this.errorMessage}</div>` : ''}
       <div class="video-container">
         <video id="qr-video" playsinline autoplay muted></video>
       </div>
@@ -350,10 +362,8 @@ export class QrisScanner extends LitElement {
           </svg>
         </div>
 
-        <div class="scanner-frame-wrapper">
           <div class="scanner-frame">
           </div>
-        </div>
         <div class="floating-buttons">
               <button class="fab" @click=${this.toggleFlash}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#0b1e42" stroke="none"><circle cx="12" cy="12" r="5"/><path stroke="#0b1e42" stroke-width="2" stroke-linecap="round" d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
