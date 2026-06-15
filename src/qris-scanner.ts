@@ -1,9 +1,8 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
 import QrScanner from 'qr-scanner';
+import qrScannerWorkerUrl from 'qr-scanner/qr-scanner-worker.min.js?url';
 import { decode } from './utils/decode';
-
-
 @customElement('qris-scanner')
 export class QrisScanner extends LitElement {
   static styles = css`
@@ -272,6 +271,9 @@ export class QrisScanner extends LitElement {
   private initScanner() {
     if (!this.videoElement) return;
 
+    // Explicitly set the worker path for Vite bundler compatibility
+    QrScanner.WORKER_PATH = qrScannerWorkerUrl;
+
     this.qrScanner = new QrScanner(
       this.videoElement,
         (result) => {
@@ -314,7 +316,7 @@ export class QrisScanner extends LitElement {
   render() {
     return html`
       <div class="video-container">
-        <video id="qr-video"></video>
+        <video id="qr-video" playsinline autoplay muted></video>
       </div>
       
       <div class="overlay">
