@@ -78,13 +78,13 @@ function getIdentifier() {
     try {
        window.wx.getStorage({
       key: 'account-binding-storage',
-      success(res) {
+      success(res: any) {
         resolve(res.data.activeAcc.identifier)
       },
       fail() {
         window.wx.getStorage({
           key: 'msisdn',
-          success(res) {
+          success(res: any) {
             resolve(res.data.msisdn)
           }
         })
