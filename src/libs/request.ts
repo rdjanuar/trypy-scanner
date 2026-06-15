@@ -1,3 +1,5 @@
+import { logger } from '../utils/logger';
+
 export interface NativeData {
   _segment: string[];
   brand: string;
@@ -36,9 +38,12 @@ export async function request<T = any>(url: string, options: RequestOptions = {}
       const sdk = window.wx || window.tcsas;
       
       if (!sdk || typeof sdk.invokeNativePlugin !== 'function') {
+        logger.add('WARN', `[request] SDK not found (wx: ${!!window.wx}, tcsas: ${!!window.tcsas}), skipping native headers`);
         resolve({ headers: {}, nativeData: defaultNativeData });
         return;
       }
+
+      logger.add('DEBUG', `[request] Calling getHeadersAPI for: ${fullUrl}`);
 
       sdk.invokeNativePlugin({
         api_name: 'getHeadersAPI',
@@ -111,9 +116,12 @@ export async function request<T = any>(url: string, options: RequestOptions = {}
              };
           }
           
+          logger.add('DEBUG', `[request] Native headers: ${JSON.stringify(Object.keys(headers))}`);
+          logger.add('DEBUG', `[request] NativeData: txId=${nativeData.transaction_id}, platform=${nativeData.platform}`);
           resolve({ headers, nativeData });
         },
         fail: (err: any) => {
+          logger.add('ERROR', `[request] getHeadersAPI failed: ${JSON.stringify(err)}`);
           console.error('getHeadersAPI failed', err);
           resolve({ headers: {}, nativeData: defaultNativeData });
         }
@@ -143,12 +151,16 @@ export async function request<T = any>(url: string, options: RequestOptions = {}
     }
   }
 
+  logger.add('INFO', `[request] ${options.method || 'GET'} ${fullUrl}`);
+
   try {
     const response = await fetch(fullUrl, {
       ...options,
       headers: finalHeaders,
       body: finalBody,
     });
+
+    logger.add('INFO', `[request] Response: ${response.status} ${response.statusText}`);
 
     if (!response.ok) {
       let errorMessage = `Request failed with status ${response.status}`;
@@ -166,6 +178,7 @@ export async function request<T = any>(url: string, options: RequestOptions = {}
     const data = await response.json();
     return data as T;
   } catch (error) {
+    logger.add('ERROR', `[request] Fetch failed: ${error}`);
     console.error(`[request error] ${fullUrl}`, error);
     throw error;
   }

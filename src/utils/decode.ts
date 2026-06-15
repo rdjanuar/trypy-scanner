@@ -102,7 +102,7 @@ function getIdentifier() {
 
 export const decode: Decode = async (params) => {
   const urlParams = new URLSearchParams(window.location.search);
-const paymentInfo = urlParams.get('payment_info')
+  const paymentInfo = urlParams.get('payment_info')
   const validateQr = validateEmvcoQR(params.data)
 
   if(!validateQr.valid) {

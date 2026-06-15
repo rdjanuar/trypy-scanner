@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
 import QrScanner from 'qr-scanner';
 import { decode } from './utils/decode';
+import { logger } from './utils/logger';
 
 @customElement('qris-scanner')
 export class QrisScanner extends LitElement {
@@ -270,28 +271,42 @@ export class QrisScanner extends LitElement {
   private async startCamera() {
     if (!this.videoElement) {
       this.errorMessage = 'Video element not found';
+      logger.add('ERROR', 'Video element not found in Shadow DOM');
       return;
     }
+
+    logger.add('INFO', 'Starting camera...');
 
     try {
       this.mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }
       });
 
+      logger.add('INFO', 'Got media stream (environment camera)');
+      const track = this.mediaStream.getVideoTracks()[0];
+      if (track) {
+        const settings = track.getSettings();
+        logger.add('DEBUG', `Camera: ${track.label} | ${settings.width}x${settings.height}`);
+      }
+
       this.videoElement.srcObject = this.mediaStream;
       await this.videoElement.play();
+      logger.add('INFO', 'Video playing');
 
       this.startQrScanning();
     } catch (err) {
+      logger.add('WARN', `Environment camera failed: ${err}`);
       console.error('Camera error:', err);
       try {
         this.mediaStream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'user' }
         });
+        logger.add('INFO', 'Fallback to user camera OK');
         this.videoElement.srcObject = this.mediaStream;
         await this.videoElement.play();
         this.startQrScanning();
       } catch (fallbackErr) {
+        logger.add('ERROR', `All cameras failed: ${fallbackErr}`);
         this.errorMessage = 'Camera Error: ' + fallbackErr;
       }
     }
@@ -300,6 +315,7 @@ export class QrisScanner extends LitElement {
   private startQrScanning() {
     if (this.scanning) return;
     this.scanning = true;
+    logger.add('INFO', 'QR scanning started (interval: 300ms)');
 
     this.scanInterval = setInterval(async () => {
       if (!this.videoElement || this.videoElement.readyState < 2) return;
@@ -308,6 +324,7 @@ export class QrisScanner extends LitElement {
           returnDetailedScanResult: true
         });
         if (result?.data) {
+          logger.add('INFO', `QR decoded: ${result.data.substring(0, 80)}...`);
           decode({ data: result.data });
           console.log('Decoded QR code:', result.data);
           this.dispatchEvent(new CustomEvent('qr-scanned', { detail: result.data }));
@@ -318,6 +335,7 @@ export class QrisScanner extends LitElement {
   }
 
   private stopCamera() {
+    logger.add('INFO', 'Stopping camera');
     if (this.scanInterval) {
       clearInterval(this.scanInterval);
       this.scanInterval = undefined;
@@ -339,12 +357,33 @@ export class QrisScanner extends LitElement {
       if (capabilities?.torch) {
         this.flashOn = !this.flashOn;
         track.applyConstraints({ advanced: [{ torch: this.flashOn } as any] });
+        logger.add('INFO', `Flash ${this.flashOn ? 'ON' : 'OFF'}`);
       } else {
+        logger.add('WARN', 'Torch not supported on this device');
         console.warn('Torch not supported on this device');
       }
     } catch (err) {
+      logger.add('ERROR', `Flash error: ${err}`);
       console.warn('Flash not supported', err);
     }
+  }
+
+  private _tapCount = 0;
+  private _tapTimer?: ReturnType<typeof setTimeout>;
+
+  private _onHeaderTap() {
+    this._tapCount++;
+    if (this._tapTimer) clearTimeout(this._tapTimer);
+    this._tapTimer = setTimeout(() => { this._tapCount = 0; }, 500);
+
+    if (this._tapCount >= 3) {
+      this._tapCount = 0;
+      this.toggleDebugLog();
+    }
+  }
+
+  private toggleDebugLog() {
+    logger.toggle();
   }
 
   render() {
@@ -355,7 +394,7 @@ export class QrisScanner extends LitElement {
       </div>
       
       <div class="overlay">
-        <div class="header-badge">
+        <div class="header-badge" @click=${this._onHeaderTap} style="pointer-events: auto; cursor: pointer;">
           Powered by
           <svg width="40" height="16" viewBox="0 0 100 40" fill="white" xmlns="http://www.w3.org/2000/svg">
             <text x="0" y="30" font-family="Arial" font-weight="bold" font-size="30">QRIS</text>
