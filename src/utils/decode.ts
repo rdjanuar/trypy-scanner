@@ -1,5 +1,4 @@
 import { request } from "../libs/request"
-import { logger } from "./logger"
 
 export interface EmvcoResult {
   valid: boolean
