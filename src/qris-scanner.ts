@@ -26,9 +26,12 @@ export class QrisScanner extends LitElement {
     }
 
     video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
     }
 
     .overlay {
@@ -260,7 +263,9 @@ export class QrisScanner extends LitElement {
   private qrScanner?: QrScanner;
 
   firstUpdated() {
-    this.initScanner();
+    setTimeout(() => {
+      this.initScanner();
+    }, 300);
   }
 
   disconnectedCallback() {
@@ -292,15 +297,14 @@ export class QrisScanner extends LitElement {
         this.videoElement,
           (result) => {
           decode({
-            data: result.data,
+            data: result.data
           });
-          console.log('Decoded QR code:', result.data);
-          this.dispatchEvent(new CustomEvent('qr-scanned', { detail: result.data }));
+          console.log('Decoded QR code:', result);
+          this.dispatchEvent(new CustomEvent('qr-scanned', { detail: result.data || result }));
         },
         {
           highlightScanRegion: false,
-          highlightCodeOutline: true,
-          returnDetailedScanResult: true
+          highlightCodeOutline: false
         }
       );
 
