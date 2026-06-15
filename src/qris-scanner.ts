@@ -268,36 +268,40 @@ export class QrisScanner extends LitElement {
     this.qrScanner?.destroy();
   }
 
+  @state()
+  errorMessage = '';
+
   private initScanner() {
     if (!this.videoElement) return;
 
-    // Explicitly set the worker path for Vite bundler compatibility
-    QrScanner.WORKER_PATH = qrScannerWorkerUrl;
+    try {
+      this.qrScanner = new QrScanner(
+        this.videoElement,
+          (result) => {
+          decode({
+            data: result.data,
+          });
+          console.log('Decoded QR code:', result.data);
+          this.dispatchEvent(new CustomEvent('qr-scanned', { detail: result.data }));
+        },
+        {
+          highlightScanRegion: false,
+          highlightCodeOutline: true,
+          returnDetailedScanResult: true
+        }
+      );
 
-    this.qrScanner = new QrScanner(
-      this.videoElement,
-        (result) => {
-        decode({
-          data: result.data,
-        })
-        console.log('Decoded QR code:', result.data);
-        this.dispatchEvent(new CustomEvent('qr-scanned', { detail: result.data }));
-      },
-      {
-        highlightScanRegion: false,
-        highlightCodeOutline: true,
-        returnDetailedScanResult: true,
-        preferredCamera: 'environment'
-      }
-    );
-
-    this.qrScanner.start().catch((err) => {
-      console.error('Failed to start scanner with environment camera, trying user camera...', err);
-      this.qrScanner?.setCamera('user').catch(fallbackErr => {
-         console.error('Failed to start user camera:', fallbackErr);
-         alert('Unable to access camera. Please ensure permissions are granted. Error: ' + fallbackErr);
+      this.qrScanner.start().catch((err) => {
+        console.error('Failed to start scanner with environment camera, trying user camera...', err);
+        this.errorMessage = String(err);
+        this.qrScanner?.setCamera('user').catch(fallbackErr => {
+           console.error('Failed to start user camera:', fallbackErr);
+           this.errorMessage = 'Camera Error: ' + fallbackErr;
+        });
       });
-    });
+    } catch (e) {
+      this.errorMessage = 'Init Error: ' + e;
+    }
   }
 
   private toggleFlash() {
@@ -315,6 +319,7 @@ export class QrisScanner extends LitElement {
 
   render() {
     return html`
+      ${this.errorMessage ? html`<div style="position: absolute; z-index: 999; color: white; background: rgba(255,0,0,0.8); padding: 20px; text-align: center; width: 100%; top: 40%; font-weight: bold; border-radius: 8px;">${this.errorMessage}</div>` : ''}
       <div class="video-container">
         <video id="qr-video" playsinline autoplay muted></video>
       </div>
