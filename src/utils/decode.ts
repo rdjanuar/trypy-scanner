@@ -80,7 +80,7 @@ function getIdentifier() {
        window.wx.getStorage({
       key: 'account-binding-storage',
       success(res: any) {
-        logger.add('DEBUG', `activeAcc - ${JSON.stringify(res.data, null, 2)}`)
+        logger.add('DEBUG', `activeAcc - ${JSON.stringify(res.data.state.activeAcc, null, 2)}`)
         resolve(res.data.state.activeAcc.identifier)
       },
       fail() {
@@ -127,6 +127,8 @@ export const decode: Decode = async (params) => {
     })
   })
   
+  logger.add('DEBUG', `Result - qr decode$ ${JSON.stringify(result, null, 2)}`)
+
   alert(JSON.stringify(result))
     
   const url = result?.data?.raw?.payment_response?.checkout_url

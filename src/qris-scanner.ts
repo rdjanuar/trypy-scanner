@@ -421,9 +421,6 @@ export class QrisScanner extends LitElement {
         
         <div class="payment-card">
           <div class="payment-info">
-            <div class="wallet-icon-wrapper">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a8 8 0 0 1-5.242 7.222M5 15a2 2 0 0 0 2 2h15V9H5a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2z"/></svg>
-            </div>
             <div class="payment-details">
               GoPay &bull; <span class="payment-amount">Rp100.000</span>
             </div>
@@ -433,18 +430,12 @@ export class QrisScanner extends LitElement {
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
           </button>
         </div>
-
         <div class="action-cards">
           <button class="action-card">
-            <div class="icon-decor">
-              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/><rect width="6" height="6" x="9" y="8" rx="1"/></svg>
-            </div>
             Tampilkan QR
           </button>
           <button class="action-card">
-            <div class="icon-decor blue-blob">
-              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/><path d="M18 7a5 5 0 0 1 0 10"/><path d="M20 5a9 9 0 0 1 0 14"/></svg>
-            </div>
+           
             QRIS Tap
           </button>
         </div>
