@@ -64,7 +64,6 @@ export class QrisScanner extends LitElement {
       align-items: center;
       justify-content: center;
       position: relative;
-      margin-bottom: 200px; /* Leave space for bottom sheet */
     }
 
     .scanner-frame {
@@ -74,6 +73,7 @@ export class QrisScanner extends LitElement {
       /* Box shadow to create dark overlay outside the frame */
       box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
       border-radius: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.5); /* Added border to prove frame exists */
     }
 
 
@@ -271,8 +271,21 @@ export class QrisScanner extends LitElement {
   @state()
   errorMessage = '';
 
+  @state()
+  debugInfo = '';
+
   private initScanner() {
     if (!this.videoElement) return;
+
+    // List cameras for debugging
+    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+      navigator.mediaDevices.enumerateDevices().then(devices => {
+        const cameras = devices.filter(d => d.kind === 'videoinput');
+        this.debugInfo = 'Cameras: ' + cameras.map(c => c.label || 'Unnamed Camera').join(', ');
+      }).catch(err => {
+        this.debugInfo = 'Could not list cameras: ' + err;
+      });
+    }
 
     try {
       this.qrScanner = new QrScanner(
@@ -320,6 +333,7 @@ export class QrisScanner extends LitElement {
   render() {
     return html`
       ${this.errorMessage ? html`<div style="position: absolute; z-index: 999; color: white; background: rgba(255,0,0,0.8); padding: 20px; text-align: center; width: 100%; top: 40%; font-weight: bold; border-radius: 8px;">${this.errorMessage}</div>` : ''}
+      ${this.debugInfo ? html`<div style="position: absolute; z-index: 999; color: lime; background: rgba(0,0,0,0.8); padding: 10px; font-size: 11px; width: 100%; top: 0; left: 0;">${this.debugInfo}</div>` : ''}
       <div class="video-container">
         <video id="qr-video" playsinline autoplay muted></video>
       </div>
