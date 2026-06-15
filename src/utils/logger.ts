@@ -1,3 +1,6 @@
+import { LitElement, html, css } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+
 type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'DEBUG';
 
 interface LogEntry {
@@ -6,14 +9,95 @@ interface LogEntry {
   message: string;
 }
 
-class Logger {
-  private logs: LogEntry[] = [];
-  private maxLogs = 100;
-  private panel: HTMLElement | null = null;
-  private logList: HTMLElement | null = null;
-  private visible = false;
+@customElement('debug-logger')
+export class DebugLogger extends LitElement {
+  static styles = css`
+    :host {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60%;
+      z-index: 99999;
+      font-family: 'Menlo', 'Consolas', monospace;
+      display: none;
+    }
 
-  constructor() {
+    :host([open]) {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: rgba(0, 0, 0, 0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 2px solid #444;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.05);
+      border-bottom: 1px solid #333;
+    }
+
+    .header-label {
+      color: #4fc3f7;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      border: none;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      color: #fff;
+    }
+
+    .btn-clear { background: #333; }
+    .btn-close { background: #ef5350; }
+
+    .log-list {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .log-entry {
+      padding: 4px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 11px;
+      line-height: 1.4;
+      word-break: break-all;
+    }
+
+    .ts { color: #888; }
+    .msg { color: #e0e0e0; }
+    .level-INFO { color: #4fc3f7; font-weight: bold; }
+    .level-WARN { color: #ffb74d; font-weight: bold; }
+    .level-ERROR { color: #ef5350; font-weight: bold; }
+    .level-DEBUG { color: #81c784; font-weight: bold; }
+  `;
+
+  @state()
+  private logs: LogEntry[] = [];
+
+  private maxLogs = 100;
+
+  connectedCallback() {
+    super.connectedCallback();
     this.interceptConsole();
     this.interceptErrors();
   }
@@ -67,145 +151,73 @@ class Logger {
   }
 
   add(level: LogLevel, message: string) {
-    const entry: LogEntry = {
-      timestamp: this.getTime(),
-      level,
-      message
-    };
-
-    this.logs.push(entry);
-    if (this.logs.length > this.maxLogs) {
-      this.logs.shift();
-    }
-
-    if (this.visible && this.logList) {
-      this.appendLogEntry(entry);
-      this.logList.scrollTop = this.logList.scrollHeight;
-    }
-  }
-
-  private getLevelColor(level: LogLevel): string {
-    switch (level) {
-      case 'INFO': return '#4fc3f7';
-      case 'WARN': return '#ffb74d';
-      case 'ERROR': return '#ef5350';
-      case 'DEBUG': return '#81c784';
-    }
-  }
-
-  private appendLogEntry(entry: LogEntry) {
-    if (!this.logList) return;
-    const line = document.createElement('div');
-    line.style.cssText = `
-      padding: 4px 8px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      font-size: 11px;
-      line-height: 1.4;
-      word-break: break-all;
-    `;
-    line.innerHTML = `
-      <span style="color:#888">${entry.timestamp}</span>
-      <span style="color:${this.getLevelColor(entry.level)};font-weight:bold">[${entry.level}]</span>
-      <span style="color:#e0e0e0">${entry.message.replace(/</g, '&lt;')}</span>
-    `;
-    this.logList.appendChild(line);
-  }
-
-  private createPanel() {
-    if (this.panel) return;
-
-    this.panel = document.createElement('div');
-    this.panel.id = 'debug-log-panel';
-    this.panel.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 60%;
-      background: rgba(0, 0, 0, 0.92);
-      z-index: 99999;
-      display: flex;
-      flex-direction: column;
-      font-family: 'Menlo', 'Consolas', monospace;
-      backdrop-filter: blur(8px);
-      border-bottom: 2px solid #444;
-    `;
-
-    // Header
-    const header = document.createElement('div');
-    header.style.cssText = `
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 12px;
-      background: rgba(255,255,255,0.05);
-      border-bottom: 1px solid #333;
-    `;
-    header.innerHTML = `<span style="color:#4fc3f7;font-size:13px;font-weight:bold">📋 Debug Logs (${this.logs.length})</span>`;
-
-    const actions = document.createElement('div');
-    actions.style.cssText = 'display:flex;gap:8px;';
-
-    const clearBtn = document.createElement('button');
-    clearBtn.textContent = 'Clear';
-    clearBtn.style.cssText = 'background:#333;color:#fff;border:none;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;';
-    clearBtn.onclick = () => this.clear();
-
-    const closeBtn = document.createElement('button');
-    closeBtn.textContent = '✕';
-    closeBtn.style.cssText = 'background:#ef5350;color:#fff;border:none;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;';
-    closeBtn.onclick = () => this.hide();
-
-    actions.appendChild(clearBtn);
-    actions.appendChild(closeBtn);
-    header.appendChild(actions);
-    this.panel.appendChild(header);
-
-    // Log list
-    this.logList = document.createElement('div');
-    this.logList.style.cssText = `
-      flex: 1;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    `;
-    this.panel.appendChild(this.logList);
-
-    document.body.appendChild(this.panel);
-  }
-
-  show() {
-    this.createPanel();
-    if (this.panel) this.panel.style.display = 'flex';
-    this.visible = true;
-
-    // Render all existing logs
-    if (this.logList) {
-      this.logList.innerHTML = '';
-      this.logs.forEach(entry => this.appendLogEntry(entry));
-      this.logList.scrollTop = this.logList.scrollHeight;
-    }
-  }
-
-  hide() {
-    if (this.panel) this.panel.style.display = 'none';
-    this.visible = false;
+    const entry: LogEntry = { timestamp: this.getTime(), level, message };
+    this.logs = [...this.logs, entry].slice(-this.maxLogs);
   }
 
   toggle() {
-    if (this.visible) {
-      this.hide();
+    if (this.hasAttribute('open')) {
+      this.removeAttribute('open');
     } else {
-      this.show();
+      this.setAttribute('open', '');
+      this.updateComplete.then(() => {
+        const list = this.shadowRoot?.querySelector('.log-list');
+        if (list) list.scrollTop = list.scrollHeight;
+      });
     }
   }
 
-  clear() {
+  private clear() {
     this.logs = [];
-    if (this.logList) this.logList.innerHTML = '';
+  }
+
+  private close() {
+    this.removeAttribute('open');
+  }
+
+  render() {
+    return html`
+      <div class="panel">
+        <div class="header">
+          <span class="header-label">📋 Debug Logs (${this.logs.length})</span>
+          <div class="actions">
+            <button class="btn btn-clear" @click=${this.clear}>Clear</button>
+            <button class="btn btn-close" @click=${this.close}>✕</button>
+          </div>
+        </div>
+        <div class="log-list">
+          ${this.logs.map(entry => html`
+            <div class="log-entry">
+              <span class="ts">${entry.timestamp}</span>
+              <span class="level-${entry.level}">[${entry.level}]</span>
+              <span class="msg">${entry.message}</span>
+            </div>
+          `)}
+        </div>
+      </div>
+    `;
   }
 }
 
-export const logger = new Logger();
+// Singleton instance — gets created when imported and appended to body
+let _instance: DebugLogger | null = null;
 
-// Expose globally so you can call it from TCMPP or browser console
+function getInstance(): DebugLogger {
+  if (!_instance) {
+    _instance = document.createElement('debug-logger') as DebugLogger;
+    document.body.appendChild(_instance);
+  }
+  return _instance;
+}
+
+export const logger = {
+  add(level: LogLevel, message: string) {
+    getInstance().add(level, message);
+  },
+  toggle() {
+    getInstance().toggle();
+  }
+};
+
+// Expose globally for TCMPP / browser console
 (window as any).__debugLogger = logger;
