@@ -1,8 +1,8 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
 import QrScanner from 'qr-scanner';
-import qrScannerWorkerUrl from 'qr-scanner/qr-scanner-worker.min.js?url';
 import { decode } from './utils/decode';
+
 @customElement('qris-scanner')
 export class QrisScanner extends LitElement {
   static styles = css`
