@@ -21,7 +21,7 @@ export class AppRoot extends TwLitElement {
   private appRouter: AppRouter = {
     goto: (path: string) => {
       const navigate = () => {
-        window.history.pushState({}, '', path);
+        window.history.replaceState({}, '', path);
         this.router.goto(path);
       };
 
