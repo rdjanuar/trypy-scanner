@@ -34,6 +34,8 @@ export class QrisScanner extends TwLitElement {
       } finally {
         clearInterval(interval);
         this.scanProgress = 100;
+        this.scanning = false
+        this.scannedQrData = ''
       }
       return qrData;
     },
@@ -123,7 +125,6 @@ export class QrisScanner extends TwLitElement {
   private startQrScanning() {
     if (this.scanning) return;
     this.scanning = true;
-    this.scannedQrData = '';
     this.logger.add('INFO', 'QR scanning started (interval: 300ms)');
 
     this.scanInterval = setInterval(async () => {
