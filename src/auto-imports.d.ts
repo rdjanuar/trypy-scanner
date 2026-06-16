@@ -9,6 +9,7 @@ declare global {
   const DebugLogger: typeof import('./components/logger').DebugLogger
   const LitElement: typeof import('lit').LitElement
   const PaymentBottomSheet: typeof import('./components/payment-bottom-sheet').PaymentBottomSheet
+  const PaymentSelectorDrawer: typeof import('./components/payment-selector-drawer').PaymentSelectorDrawer
   const QrisScanner: typeof import('./components/qris-scanner').QrisScanner
   const Router: typeof import('@lit-labs/router').Router
   const Routes: typeof import('@lit-labs/router').Routes
@@ -18,6 +19,7 @@ declare global {
   const UiDrawer: typeof import('./components/ui/drawer').UiDrawer
   const consume: typeof import('@lit/context').consume
   const createContext: typeof import('@lit/context').createContext
+  const createRef: typeof import('lit/directives/ref.js').createRef
   const css: typeof import('lit').css
   const customElement: typeof import('lit/decorators.js').customElement
   const decode: typeof import('./utils/decode').decode
@@ -27,10 +29,11 @@ declare global {
   const loggerContext: typeof import('./contexts/logger.context').loggerContext
   const map: typeof import('lit/directives/map.js').map
   const nothing: typeof import('lit').nothing
-  const portal: typeof import('./utils/portal').portal
+  const portal: typeof import('./directives/portal').portal
   const property: typeof import('lit/decorators.js').property
   const provide: typeof import('@lit/context').provide
   const query: typeof import('lit/decorators.js').query
+  const ref: typeof import('lit/directives/ref.js').ref
   const render: typeof import('lit').render
   const request: typeof import('./libs/request').request
   const routerContext: typeof import('./contexts/router.context').routerContext
@@ -62,6 +65,9 @@ declare global {
   // @ts-ignore
   export type { PaymentBottomSheet } from './components/payment-bottom-sheet'
   import('./components/payment-bottom-sheet')
+  // @ts-ignore
+  export type { PaymentSelectorDrawer } from './components/payment-selector-drawer'
+  import('./components/payment-selector-drawer')
   // @ts-ignore
   export type { QrisScanner } from './components/qris-scanner'
   import('./components/qris-scanner')

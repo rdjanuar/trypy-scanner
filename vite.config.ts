@@ -27,6 +27,10 @@ export default defineConfig({
           'lit/directives/map.js': [
             'map',
           ],
+          'lit/directives/ref.js': [
+            'createRef',
+            'ref'
+          ],
           '@lit/task': [
             'Task',
             'TaskStatus',
@@ -47,7 +51,8 @@ export default defineConfig({
         './src/libs',
         './src/contexts',
         './src/components',
-        './src/mixins'
+        './src/mixins',
+        './src/directives'
       ],
       dts: 'src/auto-imports.d.ts',
     }),

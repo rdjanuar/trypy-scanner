@@ -19,8 +19,9 @@ body {
   overflow: hidden;
   position: relative;
   background-color: white;
+  color-scheme: light;
   transform: translateZ(0);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 video {
@@ -53,3 +54,82 @@ video {
   from { transform: translateY(10px); }
   to { transform: translateY(0); }
 }
+
+
+@theme static {
+  --text-color-secondary: #757F90;
+  --color-stroke: #DAE0E9;
+    --ui-border: #e5e5e5;
+  --ui-text-strong: var(--color-strong);
+  --ui-text-dimmed: var(--color-dimmed);
+  --ui-text-normal: #3d4652;
+  --color-green-50: #effdf5;
+  --color-green-100: #d9fbe8;
+  --color-green-200: #b3f5d1;
+  --color-green-300: #75edae;
+  --color-green-400: #00dc82;
+  --color-green-500: #00c16a;
+  --color-green-600: #00a155;
+  --color-green-700: #007f45;
+  --color-green-800: #016538;
+  --color-green-900: #0a5331;
+  --color-green-950: #052e16;
+  --color-red-50: #fff0f2;
+  --color-red-100: #ffe0e5;
+  --color-red-200: #ffb8c2;
+  --color-red-300: #ff7a8e;
+  --color-red-400: #ff3351;
+  --color-red-500: #ff0025;
+  --color-red-600: #e60021;
+  --color-red-700: #a30018;
+  --color-red-800: #750011;
+  --color-red-900: #4d000b;
+  --color-red-950: #330007;
+  --color-error-50: #fdf6f6;
+  --color-error-100: #fbedec;
+  --color-error-200: #f5d2d0;
+  --color-error-300: #eeb6b3;
+  --color-error-400: #e2807a;
+  --color-error-500: #d54941;
+  --color-error-600: #c0423b;
+  --color-error-700: #802c27;
+  --color-error-800: #60211d;
+  --color-error-900: #401614;
+  --color-strong: rgb(24, 28, 33); 
+  --color-disabled: #9CA9B9;
+  --color-dimmed: #7b8b9d;
+  --color-page: #f0f2f4;
+  --color-icon-normal: #505d6d;
+  --color-normal: #3d4652;
+  --color-secondary-50: #eef4ff;
+  --color-secondary-100: #d9e8ff;
+  --color-secondary-200: #bbceff;
+  --color-secondary-300: #80aaff;
+  --color-secondary-400: #3d6fff;
+  --color-secondary-500: #004bbd;
+  --color-secondary-600: #003d99;
+  --color-secondary-700: #003080;
+  --color-secondary-800: #002260;
+  --color-secondary-900: #001540;
+  --color-secondary-950: #000d26;
+}
+
+
+@theme inline {
+  --color-primary: var(--primary)
+}
+
+:root {
+  --primary: var(--color-red-500)
+}
+
+
+@layer base {
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+

@@ -1,4 +1,5 @@
 import QrScanner from 'qr-scanner';
+import loadingPaymentJson from '../assets/lotties/loading-payment.json';
 
 const TwLitElement = TW(LitElement)
 
@@ -10,12 +11,27 @@ export class QrisScanner extends TwLitElement {
   @state()
   private scannedQrData = '';
 
+  @state()
+  private scanProgress = 0;
+
   private _decodeTask = new Task(this, {
     task: async ([qrData]) => {
       if (!qrData) return;
       this.logger.add('INFO', `Processing QR data: ${qrData.substring(0, 80)}...`);
-      this.stopCamera();
-      await decode({ data: qrData }, this.logger);
+      
+      this.scanProgress = 0;
+      const interval = setInterval(() => {
+        if (this.scanProgress < 95) {
+          this.scanProgress += Math.random() * 5 + 2;
+        }
+      }, 100);
+
+      try {
+        await decode({ data: qrData }, this.logger);
+      } finally {
+        clearInterval(interval);
+        this.scanProgress = 100;
+      }
       return qrData;
     },
     args: () => [this.scannedQrData],
@@ -33,16 +49,22 @@ export class QrisScanner extends TwLitElement {
   @state()
   scanning = false
 
+  @state()
+  private bottomSheetHeight = 0;
+
   private mediaStream?: MediaStream;
   private scanInterval?: ReturnType<typeof setInterval>;
 
   firstUpdated() {
     logger.add('DEBUG', `User Agent ${JSON.stringify(window.navigator.userAgent)}`)
     logger.add('DEBUG', `Navigator ${JSON.stringify(window.navigator, null, 2)}`)
-    // window.wx.showAppMenu()
     setTimeout(() => {
       this.startCamera();
     }, 300);
+  }
+
+  private _onSheetResize(e: CustomEvent<{ height: number }>) {
+    this.bottomSheetHeight = e.detail.height;
   }
 
  
@@ -152,8 +174,44 @@ export class QrisScanner extends TwLitElement {
     }
   }
 
+  @query('#file-input')
+  private fileInput!: HTMLInputElement;
+
+  private _openGallery() {
+    this.fileInput?.click();
+  }
+
+  private async _onFileSelected(e: Event) {
+    this.scannedQrData = ''
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (!file) return;
+
+    try {
+      this.logger.add('INFO', 'Scanning uploaded image for QR code...');
+      const result = await QrScanner.scanImage(file, { returnDetailedScanResult: true });
+      if (result?.data) {
+        this.scannedQrData = result.data;
+        this.logger.add('INFO', `Decoded QR code from image: ${result.data}`);
+        this.dispatchEvent(new CustomEvent('qr-scanned', { detail: result.data }));
+      }
+    } catch (err) {
+      this.logger.add('ERROR', `Failed to decode QR from image: ${err}`);
+      this.errorMessage = 'QR Code tidak ditemukan pada gambar.';
+      setTimeout(() => { this.errorMessage = ''; }, 3000);
+    } finally {
+      this.clearFile()
+    }
+  }
+
   private _tapCount = 0;
   private _tapTimer?: ReturnType<typeof setTimeout>;
+
+  private clearFile() {
+    if(this.fileInput) {
+      this.fileInput.value = ''
+    }
+  }
 
   private _onHeaderTap() {
     this._tapCount++;
@@ -185,43 +243,43 @@ export class QrisScanner extends TwLitElement {
   protected render() {
     return html`
       ${this.errorMessage ? html`<div class="absolute z-999 text-white bg-red-600/80 p-4 text-center w-full top-[40%] font-bold">${this.errorMessage}</div>` : ''}
-      
+
       ${this._decodeTask.render({
         pending: () => html`
-          <div class="absolute inset-0 z-9 bg-black/70 flex flex-col items-center justify-center text-white font-bold gap-3">
-            <svg class="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span>Memproses Pembayaran...</span>
-          </div>
-        `,
-        error: (err: any) => html`
-          <div class="absolute z-999 text-white bg-red-600/80 p-4 text-center w-full top-[45%] font-bold">
-            Gagal memproses QR: ${err.message || err}
+          <div class="absolute inset-0 z-9999 bg-white flex flex-col items-center justify-center">
+            <lottie-animation .animationData=${loadingPaymentJson}></lottie-animation>
+            <div class="space-y-2 text-center">
+            <p class="text-strong font-semibold text-base">Tunggu sebentar ya...</p>
+            <p class="text-secondary text-sm font-normal">Transaksimu sedang kami proses</p>
+            <ui-progress-bar value=${this.scanProgress} max="100" size="sm" .ui=${{
+              base: 'mt-6'
+            }}></ui-progress-bar>
+            </div>
           </div>
         `
       })}
-
+      
+    
       <div class="absolute inset-0 z-1">
         <video id="qr-video" playsinline autoplay muted></video>
       </div>
       
       <div class="absolute inset-0 z-2 flex flex-col pointer-events-none">
-        <div class="mx-auto mt-5 bg-black/60 text-white py-2 px-4 rounded-[20px] text-sm font-medium flex items-center gap-2 border border-white/20 backdrop-blur-sm pointer-events-auto cursor-pointer" @click=${this._onHeaderTap}>
-          Powered by
-          <svg width="40" height="16" viewBox="0 0 100 40" fill="white" xmlns="http://www.w3.org/2000/svg">
-            <text x="0" y="30" font-family="Arial" font-weight="bold" font-size="30">QRIS</text>
-          </svg>
+        <div class="mx-auto mt-5 bg-strong/70 px-4 py-2.5 rounded-[40px] text-sm font-medium flex items-center gap-2 border border-white/25 pointer-events-auto cursor-pointer" @click=${this._onHeaderTap}>
+        <p class="text-xs text-white font-semibold">
+        Powered by
+        </p>
+          <img src="/src/assets/icons/qris.svg" />
         </div>
 
-        <div class="absolute inset-x-0 bottom-[350px] px-8 flex justify-between pointer-events-auto z-3">
-          <button class="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg border-none cursor-pointer text-gray-700" @click=${this.toggleFlash}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#0b1e42" stroke="none"><circle cx="12" cy="12" r="5"/><path stroke="#0b1e42" stroke-width="2" stroke-linecap="round" d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <div class="absolute inset-x-0 px-4 flex justify-between pointer-events-auto z-3" style="bottom: ${this.bottomSheetHeight + 16}px">
+          <button class="p-3 rounded-full bg-white flex items-center justify-center shadow-lg border-none cursor-pointer text-gray-700" @click=${this.toggleFlash}>
+          <img src="/src/assets/icons/day.svg" />
           </button>
-          <button class="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg border-none cursor-pointer text-gray-700">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#0b1e42" stroke="none"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="2.5" fill="white"/><path d="M21 15l-5-5L5 21h14c1.1 0 2-.9 2-2v-4z" fill="white"/></svg>
+          <button class="p-3 rounded-full bg-white flex items-center justify-center shadow-lg border-none cursor-pointer text-gray-700" @click=${this._openGallery}>
+            <img src="/src/assets/icons/galery.svg" />  
           </button>
+          <input type="file" id="file-input" accept="image/*" class="sr-only" @change=${this._onFileSelected} />
         </div>
       </div>
 
@@ -229,6 +287,7 @@ export class QrisScanner extends TwLitElement {
         @change-payment-method=${this._onChangePaymentMethod}
         @show-qr=${this._onShowQr}
         @qris-tap=${this._onQrisTap}
+        @sheet-resize=${this._onSheetResize}
       ></payment-bottom-sheet>
     `;
   }

@@ -13,6 +13,7 @@
     "@lit/context": "^1.1.6",
     "@lit/task": "^1.0.3",
     "lit": "^3.3.2",
+    "lottie-web": "^5.13.0",
     "qr-scanner": "^1.4.2",
     "tailwind-merge": "^3.6.0",
     "tailwind-variants": "^3.2.2"

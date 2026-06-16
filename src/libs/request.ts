@@ -46,90 +46,109 @@ export async function request<T = any>(url: string, options: RequestOptions = {}
 
       activeLogger.add('DEBUG', `[request] Calling getHeadersAPI for: ${fullUrl}`);
 
-    
-
-      sdk.invokeNativePlugin({
-        api_name: 'getHeadersAPI',
-        data: {
-          appId: getAppId(),
-          url: fullUrl,
-          payload: {}
-        },
-        success: (res: any) => {
-          const headers: Record<string, string> = {};
-          let nativeData = { ...defaultNativeData };
-          
-          if (res && res.data) {
-             const {
-               AccessAuthorization,
-               accessauthorization,
-               AuthServer,
-               authserver,
-               HASH,
-               hash,
-               Cookie = {},
-               cookies = {},
-               'X-REQUESTED-WITH': xReq1,
-               'X-Requested-With': xReq2,
-               segment,
-               custType,
-               serviceType,
-               brand,
-               ...rest
-             } = res.data;
-
-             const mappedAccessAuth = accessauthorization || AccessAuthorization;
-             if (mappedAccessAuth) headers['accessauthorization'] = mappedAccessAuth;
-             
-             const mappedAuthServer = AuthServer || authserver;
-             if (mappedAuthServer) headers['AuthServer'] = mappedAuthServer;
-             
-             const mappedHash = hash || HASH;
-             if (mappedHash) headers['hash'] = mappedHash;
-             
-             const mappedXReq = xReq1 || xReq2;
-             if (mappedXReq) headers['X-REQUESTED-WITH'] = mappedXReq;
-             
-             const currentCookie = Object.keys(cookies).length > 0 ? cookies : Cookie;
-             if (currentCookie.identifierEnc || currentCookie.serviceEnc) {
-                const _cookies = {
-                  identifierEnc: currentCookie.identifierEnc,
-                  serviceEnc: currentCookie.serviceEnc,
-                  defaultIdentifier: currentCookie.identifierEnc
-                };
-                headers['Cookie'] = Object.entries(_cookies)
-                  .map(([k, v]) => `${k}=${v}`)
-                  .join('; ');
-             }
-
-             for (const [key, value] of Object.entries(rest)) {
-                if (typeof value === 'string' && value) {
-                    headers[key] = value;
-                }
-             }
-
-             const _segment = Array.isArray(segment) ? segment : (typeof segment === 'string' && segment ? segment.split(',') : []);
-
-             nativeData = {
-               _segment,
-               brand: brand || '',
-               custtype: custType || '',
-               deviceType: serviceType?.toLocaleLowerCase() || '',
-               platform: String(rest.osversion || '').toLowerCase().split('|')[0] || '',
-               transaction_id: rest.TRANSACTIONID || ''
-             };
-          }
-          
-          activeLogger.add('DEBUG', `[request] Native headers: ${JSON.stringify(Object.keys(headers))}`);
-          activeLogger.add('DEBUG', `[request] NativeData: txId=${nativeData.transaction_id}, platform=${nativeData.platform}`);
-          resolve({ headers, nativeData });
-        },
-        fail: (err: any) => {
-          activeLogger.add('ERROR', `[request] getHeadersAPI failed: ${JSON.stringify(err)}`);
-          console.error('getHeadersAPI failed', err);
-          resolve({ headers: {}, nativeData: defaultNativeData });
+      let isResolved = false;
+      const safeResolve = (data: NativeResult) => {
+        if (!isResolved) {
+          isResolved = true;
+          resolve(data);
         }
-      });
+      };
+
+      const timeoutId = setTimeout(() => {
+        activeLogger.add('WARN', `[request] getHeadersAPI timed out, skipping native headers`);
+        safeResolve({ headers: {}, nativeData: defaultNativeData });
+      }, 1500);
+
+      try {
+        sdk.invokeNativePlugin({
+          api_name: 'getHeadersAPI',
+          data: {
+            appId: getAppId(),
+            url: fullUrl,
+            payload: {}
+          },
+          success: (res: any) => {
+            clearTimeout(timeoutId);
+            const headers: Record<string, string> = {};
+            let nativeData = { ...defaultNativeData };
+            
+            if (res && res.data) {
+               const {
+                 AccessAuthorization,
+                 accessauthorization,
+                 AuthServer,
+                 authserver,
+                 HASH,
+                 hash,
+                 Cookie = {},
+                 cookies = {},
+                 'X-REQUESTED-WITH': xReq1,
+                 'X-Requested-With': xReq2,
+                 segment,
+                 custType,
+                 serviceType,
+                 brand,
+                 ...rest
+               } = res.data;
+
+               const mappedAccessAuth = accessauthorization || AccessAuthorization;
+               if (mappedAccessAuth) headers['accessauthorization'] = mappedAccessAuth;
+               
+               const mappedAuthServer = AuthServer || authserver;
+               if (mappedAuthServer) headers['AuthServer'] = mappedAuthServer;
+               
+               const mappedHash = hash || HASH;
+               if (mappedHash) headers['hash'] = mappedHash;
+               
+               const mappedXReq = xReq1 || xReq2;
+               if (mappedXReq) headers['X-REQUESTED-WITH'] = mappedXReq;
+               
+               const currentCookie = Object.keys(cookies).length > 0 ? cookies : Cookie;
+               if (currentCookie.identifierEnc || currentCookie.serviceEnc) {
+                  const _cookies = {
+                    identifierEnc: currentCookie.identifierEnc,
+                    serviceEnc: currentCookie.serviceEnc,
+                    defaultIdentifier: currentCookie.identifierEnc
+                  };
+                  headers['Cookie'] = Object.entries(_cookies)
+                    .map(([k, v]) => `${k}=${v}`)
+                    .join('; ');
+               }
+
+               for (const [key, value] of Object.entries(rest)) {
+                  if (typeof value === 'string' && value) {
+                      headers[key] = value;
+                  }
+               }
+
+               const _segment = Array.isArray(segment) ? segment : (typeof segment === 'string' && segment ? segment.split(',') : []);
+
+               nativeData = {
+                 _segment,
+                 brand: brand || '',
+                 custtype: custType || '',
+                 deviceType: serviceType?.toLocaleLowerCase() || '',
+                 platform: String(rest.osversion || '').toLowerCase().split('|')[0] || '',
+                 transaction_id: rest.TRANSACTIONID || ''
+               };
+            }
+            
+            activeLogger.add('DEBUG', `[request] Native headers: ${JSON.stringify(Object.keys(headers))}`);
+            activeLogger.add('DEBUG', `[request] NativeData: txId=${nativeData.transaction_id}, platform=${nativeData.platform}`);
+            safeResolve({ headers, nativeData });
+          },
+          fail: (err: any) => {
+            clearTimeout(timeoutId);
+            activeLogger.add('ERROR', `[request] getHeadersAPI failed: ${JSON.stringify(err)}`);
+            console.error('getHeadersAPI failed', err);
+            safeResolve({ headers: {}, nativeData: defaultNativeData });
+          }
+        });
+      } catch (err) {
+        clearTimeout(timeoutId);
+        activeLogger.add('ERROR', `[request] invokeNativePlugin exception: ${err}`);
+        safeResolve({ headers: {}, nativeData: defaultNativeData });
+      }
     });
   };
 

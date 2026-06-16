@@ -8,7 +8,8 @@ export const drawerTheme = tv({
     header: 'px-4 py-4 sm:px-6',
     title: 'text-lg font-semibold leading-6 text-gray-900',
     description: 'mt-1 text-sm text-gray-500',
-    body: 'relative flex-1 px-4 py-6 sm:px-6 overflow-y-auto',
+    body: 'relative flex-1 px-4 sm:px-6 overflow-y-auto',
+    footer: 'px-4 py-4 sm:px-6',
   },
   variants: {
     direction: {
