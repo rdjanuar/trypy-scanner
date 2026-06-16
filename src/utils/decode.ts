@@ -72,7 +72,7 @@ export type Decode = (
 ) => Promise<void>
 
 
-function getIdentifier(activeLogger: ILogger = logger) {
+function getIdentifier() {
   return new Promise((resolve, reject) => {
     try {
       window.wx.getStorage({
@@ -117,7 +117,7 @@ export const decode: Decode = async (params, activeLogger = logger) => {
        channel: 'i1',
         transaction_id: nativeData.transaction_id,
         customer_details: {
-          customer_phone: await getIdentifier(activeLogger)
+          customer_phone: await getIdentifier()
         },
         payment_info: {
           payment_provider: paymentInfo,
