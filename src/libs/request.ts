@@ -1,4 +1,3 @@
-import { logger } from '../utils/logger';
 
 export interface NativeData {
   _segment: string[];
@@ -13,6 +12,7 @@ export type DataFactory<U> = (nativeData: NativeData) => U | void;
 
 export interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: DataFactory<any> | BodyInit | Record<string, any> | null;
+  logger?: ILogger;
 }
 
 interface NativeResult {
@@ -21,6 +21,7 @@ interface NativeResult {
 }
 
 export async function request<T = any>(url: string, options: RequestOptions = {}): Promise<T> {
+  const activeLogger = options.logger || logger;
   const baseUrl = import.meta.env.VITE_BASE_API_URL || '';
   const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
 
@@ -38,12 +39,14 @@ export async function request<T = any>(url: string, options: RequestOptions = {}
       const sdk = window.wx || window.tcsas;
       
       if (!sdk || typeof sdk.invokeNativePlugin !== 'function') {
-        logger.add('WARN', `[request] SDK not found (wx: ${!!window.wx}, tcsas: ${!!window.tcsas}), skipping native headers`);
+        activeLogger.add('WARN', `[request] SDK not found (wx: ${!!window.wx}, tcsas: ${!!window.tcsas}), skipping native headers`);
         resolve({ headers: {}, nativeData: defaultNativeData });
         return;
       }
 
-      logger.add('DEBUG', `[request] Calling getHeadersAPI for: ${fullUrl}`);
+      activeLogger.add('DEBUG', `[request] Calling getHeadersAPI for: ${fullUrl}`);
+
+    
 
       sdk.invokeNativePlugin({
         api_name: 'getHeadersAPI',
@@ -117,12 +120,12 @@ export async function request<T = any>(url: string, options: RequestOptions = {}
              };
           }
           
-          logger.add('DEBUG', `[request] Native headers: ${JSON.stringify(Object.keys(headers))}`);
-          logger.add('DEBUG', `[request] NativeData: txId=${nativeData.transaction_id}, platform=${nativeData.platform}`);
+          activeLogger.add('DEBUG', `[request] Native headers: ${JSON.stringify(Object.keys(headers))}`);
+          activeLogger.add('DEBUG', `[request] NativeData: txId=${nativeData.transaction_id}, platform=${nativeData.platform}`);
           resolve({ headers, nativeData });
         },
         fail: (err: any) => {
-          logger.add('ERROR', `[request] getHeadersAPI failed: ${JSON.stringify(err)}`);
+          activeLogger.add('ERROR', `[request] getHeadersAPI failed: ${JSON.stringify(err)}`);
           console.error('getHeadersAPI failed', err);
           resolve({ headers: {}, nativeData: defaultNativeData });
         }
@@ -152,7 +155,7 @@ export async function request<T = any>(url: string, options: RequestOptions = {}
     }
   }
 
-  logger.add('INFO', `[request] ${options.method || 'GET'} ${fullUrl}`);
+  activeLogger.add('INFO', `[request] ${options.method || 'GET'} ${fullUrl}`);
 
   try {
     const response = await fetch(fullUrl, {
@@ -161,7 +164,7 @@ export async function request<T = any>(url: string, options: RequestOptions = {}
       body: finalBody,
     });
 
-    logger.add('INFO', `[request] Response: ${response.status} ${response.statusText}`);
+    activeLogger.add('INFO', `[request] Response: ${response.status} ${response.statusText}`);
 
     if (!response.ok) {
       let errorMessage = `Request failed with status ${response.status}`;
@@ -179,7 +182,7 @@ export async function request<T = any>(url: string, options: RequestOptions = {}
     const data = await response.json();
     return data as T;
   } catch (error) {
-    logger.add('ERROR', `[request] Fetch failed: ${error}`);
+    activeLogger.add('ERROR', `[request] Fetch failed: ${error}`);
     console.error(`[request error] ${fullUrl}`, error);
     throw error;
   }

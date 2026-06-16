@@ -1,5 +1,3 @@
-import { request } from "../libs/request"
-import { logger } from "./logger"
 
 export interface EmvcoResult {
   valid: boolean
@@ -68,27 +66,27 @@ export function validateEmvcoQR(qr: string): EmvcoResult {
 }
 
 
-export type Decode = (params: {
-  data: string
-  // paymentInfo: string
-}) => void
+export type Decode = (
+  params: { data: string },
+  logger?: ILogger
+) => Promise<void>
 
 
-function getIdentifier() {
+function getIdentifier(activeLogger: ILogger = logger) {
   return new Promise((resolve, reject) => {
     try {
-       window.wx.getStorage({
+      window.wx.getStorage({
       key: 'account-binding-storage',
       success(res: any) {
         const parsedData = JSON.parse(res.data)
-        logger.add('DEBUG', `activeAcc - ${JSON.stringify(parsedData.state.activeAcc, null, 2)}`)
         resolve(parsedData.state.activeAcc.identifier)
       },
       fail() {
         window.wx.getStorage({
           key: 'msisdn',
           success(res: any) {
-            resolve(res.data.msisdn)
+            const parsedData = JSON.parse(res.data)
+            resolve(parsedData.msisdn)
           }
         })
       }
@@ -103,7 +101,7 @@ function getIdentifier() {
 
 
 
-export const decode: Decode = async (params) => {
+export const decode: Decode = async (params, activeLogger = logger) => {
   const urlParams = new URLSearchParams(window.location.search);
   const paymentInfo = urlParams.get('payment_info')
   const validateQr = validateEmvcoQR(params.data)
@@ -119,16 +117,17 @@ export const decode: Decode = async (params) => {
        channel: 'i1',
         transaction_id: nativeData.transaction_id,
         customer_details: {
-          customer_phone: await getIdentifier()
+          customer_phone: await getIdentifier(activeLogger)
         },
         payment_info: {
           payment_provider: paymentInfo,
           qr_string: params.data
         },
-    })
+    }),
+    logger: activeLogger
   })
   
-  logger.add('DEBUG', `Result - qr decode$ ${JSON.stringify(result, null, 2)}`)
+  activeLogger.add('DEBUG', `Result - qr decode$ ${JSON.stringify(result, null, 2)}`)
 
   alert(JSON.stringify(result))
     
