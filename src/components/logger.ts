@@ -104,6 +104,17 @@ export class DebugLogger extends TwLitElement implements ILogger {
     this.logs = [];
   }
 
+  private async copyMessage(e: Event, message: string) {
+    const btn = e.currentTarget as HTMLButtonElement;
+    try {
+      await navigator.clipboard.writeText(message);
+      const original = btn.textContent;
+      btn.textContent = '✓';
+      setTimeout(() => { btn.textContent = original; }, 1000);
+    } catch {
+    }
+  }
+
   private close() {
     this.open = false;
   }
@@ -131,10 +142,17 @@ export class DebugLogger extends TwLitElement implements ILogger {
 
         <div class="flex-1 overflow-y-auto log-list font-mono h-full">
         ${map(this.logs, (log) =>  html`
-            <div class="py-1 px-2 border-b border-white/5 text-[11px] leading-[1.4] break-all">
-              <span class="text-zinc-500">${log.timestamp}</span>
-              <span class="${levelClasses[log.level]}">[${log.level}]</span>
-              <span class="text-zinc-300">${log.message}</span>
+            <div class="group flex items-start gap-1 py-1 px-2 border-b border-white/5 text-[11px] leading-[1.4] break-all">
+              <div class="flex-1">
+                <span class="text-zinc-500">${log.timestamp}</span>
+                <span class="${levelClasses[log.level]}">[${log.level}]</span>
+                <span class="text-zinc-300">${log.message}</span>
+              </div>
+              <button
+                class="shrink-0 border-none bg-transparent text-zinc-600 hover:text-zinc-300 cursor-pointer text-[11px] p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                title="Copy message"
+                @click=${(e: Event) => this.copyMessage(e, log.message)}
+              >📋</button>
             </div>
         `)}
         </div>
