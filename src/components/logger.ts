@@ -149,7 +149,7 @@ export class DebugLogger extends TwLitElement implements ILogger {
                 <span class="text-zinc-300">${log.message}</span>
               </div>
               <button
-                class="shrink-0 border-none bg-transparent text-zinc-600 hover:text-zinc-300 cursor-pointer text-[11px] p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                class="shrink-0 border-none bg-transparent text-zinc-600 hover:text-zinc-300 cursor-pointer text-[11px] p-0.5 rounded"
                 title="Copy message"
                 @click=${(e: Event) => this.copyMessage(e, log.message)}
               >📋</button>
