@@ -52,6 +52,9 @@ export class QrisScanner extends TwLitElement {
   errorMessage = '';
 
   @state()
+  isCameraDenied = false;
+
+  @state()
   scanning = false
 
   @state()
@@ -79,6 +82,7 @@ export class QrisScanner extends TwLitElement {
   }
 
   private async startCamera() {
+    this.errorMessage = '';
     if (!this.videoElement) {
       this.errorMessage = 'Video element not found';
       this.logger.add('ERROR', 'Video element not found in Shadow DOM');
@@ -117,9 +121,45 @@ export class QrisScanner extends TwLitElement {
         this.startQrScanning();
       } catch (fallbackErr) {
         this.logger.add('ERROR', `All cameras failed: ${fallbackErr}`);
-        this.errorMessage = 'Camera Error: ' + fallbackErr;
+        if (fallbackErr instanceof Error && fallbackErr.name === 'NotAllowedError') {
+          this.isCameraDenied = true;
+          this.errorMessage = 'Akses kamera ditolak. Mohon izinkan akses kamera di pengaturan browser Anda, lalu muat ulang halaman.';
+          this.checkPermissionStatus();
+        } else {
+          this.isCameraDenied = false;
+          this.errorMessage = 'Kamera tidak dapat diakses: ' + fallbackErr;
+        }
       }
     }
+  }
+
+  private async checkPermissionStatus() {
+    try {
+      const perm = await navigator.permissions.query({ name: 'camera' as PermissionName });
+      this.isCameraDenied = perm.state === 'denied';
+      perm.onchange = () => {
+        this.isCameraDenied = perm.state === 'denied';
+        if (perm.state === 'granted') {
+          this.startCamera();
+        }
+      };
+    } catch (e) {
+      this.logger.add('WARN', 'Permissions API not supported for camera');
+    }
+  }
+
+  private async retryCamera() {
+    try {
+      const perm = await navigator.permissions.query({ name: 'camera' as PermissionName });
+      if (perm.state === 'denied') {
+        window.location.reload();
+        return;
+      }
+    } catch (e) {
+      // Ignored
+    }
+    this.isCameraDenied = false;
+    this.startCamera();
   }
 
   private startQrScanning() {
@@ -246,7 +286,7 @@ export class QrisScanner extends TwLitElement {
 
   protected render() {
     return html`
-      ${this.errorMessage ? html`<div class="absolute z-999 text-white bg-red-600/80 p-4 text-center w-full top-[40%] font-bold">${this.errorMessage}</div>` : ''}
+     
 
       ${this._decodeTask.render({
         pending: () => html`
@@ -262,6 +302,19 @@ export class QrisScanner extends TwLitElement {
           </div>
         `
       })}
+
+      ${this.isCameraDenied ? html`
+        <div class="absolute inset-0 z-2 bg-strong flex flex-col items-center justify-center p-6 text-center pointer-events-auto">
+          <div class="size-12 rounded-full bg-white/10 flex items-center justify-center mb-3">
+            <svg class="size-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894l-2.023-1.011M2 12v5a2 2 0 002 2h11M13 7h-2M7 7H4a2 2 0 00-2 2v2" />
+            </svg>
+          </div>
+          <p class="text-white font-medium text-sm mb-1">Akses kamera ditolak</p>
+          <p class="text-white/70 text-xs px-8 mb-4">Mohon izinkan akses kamera secara manual melalui pengaturan browser Anda.</p>
+          <button class="text-white font-semibold text-xs underline bg-transparent border-none cursor-pointer" @click=${this.retryCamera}>Muat Ulang Halaman</button>
+        </div>
+      ` : ''}
       
     
       <div class="absolute inset-0 z-1">
