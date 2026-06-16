@@ -51,7 +51,7 @@ export async function request<T = any>(url: string, options: RequestOptions = {}
       sdk.invokeNativePlugin({
         api_name: 'getHeadersAPI',
         data: {
-          appId: 'mpl035ii4i5m5ljh',
+          appId: getAppId(),
           url: fullUrl,
           payload: {}
         },

@@ -36,6 +36,10 @@ export default defineConfig({
             'consume',
             'createContext',
           ],
+          '@lit-labs/router': [
+            'Router',
+            'Routes',
+          ],
         }
       ],
       dirs: [

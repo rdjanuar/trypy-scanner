@@ -39,6 +39,7 @@ export class QrisScanner extends TwLitElement {
   firstUpdated() {
     logger.add('DEBUG', `User Agent ${JSON.stringify(window.navigator.userAgent)}`)
     logger.add('DEBUG', `Navigator ${JSON.stringify(window.navigator, null, 2)}`)
+    // window.wx.showAppMenu()
     setTimeout(() => {
       this.startCamera();
     }, 300);

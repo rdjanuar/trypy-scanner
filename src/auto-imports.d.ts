@@ -9,15 +9,19 @@ declare global {
   const DebugLogger: typeof import('./components/logger').DebugLogger
   const LitElement: typeof import('lit').LitElement
   const PaymentBottomSheet: typeof import('./components/payment-bottom-sheet').PaymentBottomSheet
+  const QrisScanner: typeof import('./components/qris-scanner').QrisScanner
+  const Router: typeof import('@lit-labs/router').Router
+  const Routes: typeof import('@lit-labs/router').Routes
   const TW: typeof import('./mixins/tailwind-integration').TW
   const Task: typeof import('@lit/task').Task
   const TaskStatus: typeof import('@lit/task').TaskStatus
-  const UiDrawer: typeof import('./components/drawer').UiDrawer
+  const UiDrawer: typeof import('./components/ui/drawer').UiDrawer
   const consume: typeof import('@lit/context').consume
   const createContext: typeof import('@lit/context').createContext
   const css: typeof import('lit').css
   const customElement: typeof import('lit/decorators.js').customElement
   const decode: typeof import('./utils/decode').decode
+  const getAppId: typeof import('./utils/wx').getAppId
   const html: typeof import('lit').html
   const logger: typeof import('./utils/logger').logger
   const loggerContext: typeof import('./contexts/logger.context').loggerContext
@@ -29,6 +33,7 @@ declare global {
   const query: typeof import('lit/decorators.js').query
   const render: typeof import('lit').render
   const request: typeof import('./libs/request').request
+  const routerContext: typeof import('./contexts/router.context').routerContext
   const state: typeof import('lit/decorators.js').state
   const tv: typeof import('./libs/tv').tv
   const validateCRC: typeof import('./utils/decode').validateCRC
@@ -49,14 +54,17 @@ declare global {
   export type { LogLevel, ILogger } from './contexts/logger.context'
   import('./contexts/logger.context')
   // @ts-ignore
-  export type { UiDrawer } from './components/drawer'
-  import('./components/drawer')
+  export type { AppRouter } from './contexts/router.context'
+  import('./contexts/router.context')
   // @ts-ignore
   export type { DebugLogger } from './components/logger'
   import('./components/logger')
   // @ts-ignore
   export type { PaymentBottomSheet } from './components/payment-bottom-sheet'
   import('./components/payment-bottom-sheet')
+  // @ts-ignore
+  export type { QrisScanner } from './components/qris-scanner'
+  import('./components/qris-scanner')
   // @ts-ignore
   export type { LitMixin } from './mixins/tailwind-integration'
   import('./mixins/tailwind-integration')

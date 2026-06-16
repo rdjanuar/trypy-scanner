@@ -6,14 +6,15 @@ export default function AutoImportComponents() {
   const componentsDir = path.resolve(process.cwd(), 'src/components');
 
   if (fs.existsSync(componentsDir)) {
-    const files = fs.readdirSync(componentsDir);
+    const files = fs.readdirSync(componentsDir, { recursive: true }) as string[];
     for (const file of files) {
       if (file.endsWith('.ts') || file.endsWith('.js')) {
         const filePath = path.join(componentsDir, file);
         const content = fs.readFileSync(filePath, 'utf-8');
         const match = content.match(/@customElement\(['"]([^'"]+)['"]\)/);
         if (match && match[1]) {
-          registry[match[1]] = `/src/components/${file}`;
+          const importPath = `/src/components/${file.replace(/\\/g, '/')}`;
+          registry[match[1]] = importPath;
         }
       }
     }

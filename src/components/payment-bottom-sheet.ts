@@ -1,3 +1,4 @@
+import type { AppRouter } from '../contexts/router.context';
 
 const TwLitElement = TW(LitElement);
 
@@ -7,6 +8,10 @@ export class PaymentBottomSheet extends TwLitElement {
   @consume({context: loggerContext})
   @property({attribute: false})
   public logger?: ILogger
+
+  @consume({ context: routerContext })
+  @property({ attribute: false })
+  private router?: AppRouter
 
   static styles = css`
     .icon-decor::before {
@@ -41,6 +46,7 @@ export class PaymentBottomSheet extends TwLitElement {
 
   private _onQrisTapClick() {
     logger.add('DEBUG', 'Qris Tap Click')
+    this.router?.goto('/about')
     this.dispatchEvent(new CustomEvent('qris-tap', { bubbles: true, composed: true }));
   }
 

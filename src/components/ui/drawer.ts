@@ -1,4 +1,4 @@
-import { drawerTheme } from '../themes/drawer';
+import { drawerTheme } from '../../themes/drawer';
 
 const TwLitElement = TW(LitElement);
 
