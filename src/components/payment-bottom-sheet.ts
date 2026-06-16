@@ -1,4 +1,5 @@
 import type { AppRouter } from '../contexts/router.context';
+import secureIcon from '../assets/icons/secure.svg';
 
 const TwLitElement = TW(LitElement);
 
@@ -69,7 +70,7 @@ export class PaymentBottomSheet extends TwLitElement {
   protected render() {
     void this.router;
     return html`
-      <div class="sheet-root absolute bottom-0 left-0 w-full bg-white rounded-t-2xl p-4 z-4 pointer-events-auto shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+      <div class="sheet-root absolute bottom-0 left-0 w-full bg-white rounded-t-2xl px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] z-4 pointer-events-auto shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
         <div class="px-3 py-4 relative border border-stroke rounded-2xl">
           <div class="flex justify-between items-center">
             <div class="flex gap-3 items-center">
@@ -84,7 +85,7 @@ export class PaymentBottomSheet extends TwLitElement {
         </div>
       </div>
         <div class="mt-3 flex items-center justify-center gap-1">
-        <img src="/src/assets/icons/secure.svg" />
+        <img src=${secureIcon} />
           <p class="text-secondary text-xs">Pembayaran aman oleh <span class="font-bold">Telkomsel</span></p>  
         </div>
       </div>

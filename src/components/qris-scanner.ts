@@ -1,5 +1,8 @@
 import QrScanner from 'qr-scanner';
 import loadingPaymentJson from '../assets/lotties/loading-payment.json';
+import qrisIcon from '../assets/icons/qris.svg';
+import dayIcon from '../assets/icons/day.svg';
+import galeryIcon from '../assets/icons/galery.svg';
 
 const TwLitElement = TW(LitElement)
 
@@ -269,15 +272,15 @@ export class QrisScanner extends TwLitElement {
         <p class="text-xs text-white font-semibold">
         Powered by
         </p>
-          <img src="/src/assets/icons/qris.svg" />
+          <img src=${qrisIcon} />
         </div>
 
         <div class="absolute inset-x-0 px-4 flex justify-between pointer-events-auto z-3" style="bottom: ${this.bottomSheetHeight + 16}px">
           <button class="p-3 rounded-full bg-white flex items-center justify-center shadow-lg border-none cursor-pointer text-gray-700" @click=${this.toggleFlash}>
-          <img src="/src/assets/icons/day.svg" />
+          <img src=${dayIcon} />
           </button>
           <button class="p-3 rounded-full bg-white flex items-center justify-center shadow-lg border-none cursor-pointer text-gray-700" @click=${this._openGallery}>
-            <img src="/src/assets/icons/galery.svg" />  
+            <img src=${galeryIcon} />  
           </button>
           <input type="file" id="file-input" accept="image/*" class="sr-only" @change=${this._onFileSelected} />
         </div>
