@@ -1,4 +1,4 @@
-import lottie from 'lottie-web';
+import lottie from 'lottie-web/build/player/lottie_light.js';
 
 @customElement('lottie-animation')
 export class LottieAnimation extends LitElement {
