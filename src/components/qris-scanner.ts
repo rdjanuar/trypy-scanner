@@ -34,10 +34,14 @@ export class QrisScanner extends TwLitElement {
       } finally {
         clearInterval(interval);
         this.scanProgress = 100;
-        this.scanning = false
-        this.scannedQrData = ''
       }
       return qrData;
+    },
+    onComplete: () => {
+      this.resetScanner()
+    },
+    onError:() => {
+      this.resetScanner()
     },
     args: () => [this.scannedQrData],
   });
@@ -79,6 +83,11 @@ export class QrisScanner extends TwLitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this.stopCamera();
+  }
+
+  private resetScanner() {
+      this.scanning = false
+      this.scannedQrData = ''
   }
 
   private async startCamera() {
