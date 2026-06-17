@@ -30,18 +30,20 @@ export class QrisScanner extends TwLitElement {
       }, 100);
 
       try {
-        await decode({ data: qrData }, this.logger);
+        await decode({ data: qrData }, {
+          onSucess: () => {
+            this.resetScanner()
+          }
+        });
       } finally {
         clearInterval(interval);
         this.scanProgress = 100;
       }
       return qrData;
     },
-    onComplete: () => {
-      this.resetScanner()
-    },
+  
     onError:() => {
-      this.resetScanner()
+      this.isTransactionErrorOpen = true;
     },
     args: () => [this.scannedQrData],
   });
@@ -63,6 +65,9 @@ export class QrisScanner extends TwLitElement {
 
   @state()
   private bottomSheetHeight = 0;
+
+  @state()
+  isTransactionErrorOpen = false;
 
   private mediaStream?: MediaStream;
   private scanInterval?: ReturnType<typeof setInterval>;
@@ -295,8 +300,6 @@ export class QrisScanner extends TwLitElement {
 
   protected render() {
     return html`
-     
-
       ${this._decodeTask.render({
         pending: () => html`
           <div class="absolute inset-0 z-9999 bg-white flex flex-col items-center justify-center">
@@ -355,6 +358,18 @@ export class QrisScanner extends TwLitElement {
         @qris-tap=${this._onQrisTap}
         @sheet-resize=${this._onSheetResize}
       ></payment-bottom-sheet>
+
+      <transaction-error-dialog
+        ?open=${this.isTransactionErrorOpen}
+        @close=${() => {
+          this.isTransactionErrorOpen = false
+          this.resetScanner()
+        }}
+        @retry=${() => {
+          this.isTransactionErrorOpen = false;
+          this.resetScanner()
+        }}
+      ></transaction-error-dialog>
     `;
   }
 }

@@ -21,10 +21,10 @@ export const buttonTheme = {
     },
     size: {
       xs: { base: "h-6 gap-1 rounded px-2 text-xs", loadingIcon: "size-3" },
-      sm: { base: "h-7 gap-1 rounded-md px-2.5 text-[0.8rem]", loadingIcon: "size-3.5" },
+      sm: { base: "h-7 gap-1 rounded-full px-2.5 text-[0.8rem]", loadingIcon: "size-3.5" },
       md: { base: "h-8 gap-1.5 px-3 text-sm", loadingIcon: "size-4" },
-      lg: { base: "h-9 gap-1.5 rounded-md px-4 text-sm", loadingIcon: "size-5" },
-      xl: { base: "h-11 gap-2 rounded-md px-4 text-base", loadingIcon: "size-6" },
+      lg: { base: "h-9 gap-1.5 rounded-full px-4 text-sm", loadingIcon: "size-5" },
+      xl: { base: "h-11 gap-2 rounded-full px-4 text-base", loadingIcon: "size-6" },
       icon: { base: "size-8", loadingIcon: "size-4" },
     },
     block: {

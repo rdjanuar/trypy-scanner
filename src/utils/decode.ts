@@ -68,7 +68,10 @@ export function validateEmvcoQR(qr: string): EmvcoResult {
 
 export type Decode = (
   params: { data: string },
-  logger?: ILogger
+  options?: Partial<{
+    onSucess: VoidFunction
+    logger: ILogger,
+  }>
 ) => Promise<void>
 
 
@@ -102,10 +105,11 @@ function getIdentifier() {
 
 
 
-export const decode: Decode = async (params, activeLogger = logger) => {
+export const decode: Decode = async (params, options = {}) => {
   const urlParams = new URLSearchParams(window.location.search);
   const paymentInfo = urlParams.get('payment_info')
   const validateQr = validateEmvcoQR(params.data)
+  const activeLogger = options.logger ?? logger
 
   if(!validateQr.valid) {
     alert(validateQr.reason || 'QR Tidak Valid')
@@ -136,6 +140,7 @@ export const decode: Decode = async (params, activeLogger = logger) => {
   const url = result?.data?.raw?.payment_response?.checkout_url
 
   if(url) {
+    options?.onSucess()
     window.location.replace = url
   }
 

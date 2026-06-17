@@ -16,6 +16,7 @@ declare global {
   const TW: typeof import('./mixins/tailwind-integration').TW
   const Task: typeof import('@lit/task').Task
   const TaskStatus: typeof import('@lit/task').TaskStatus
+  const TransactionErrorDialog: typeof import('./components/transaction-error-dialog').TransactionErrorDialog
   const UiDrawer: typeof import('./components/ui/drawer').UiDrawer
   const consume: typeof import('@lit/context').consume
   const createContext: typeof import('@lit/context').createContext
@@ -72,6 +73,9 @@ declare global {
   // @ts-ignore
   export type { QrisScanner } from './components/qris-scanner'
   import('./components/qris-scanner')
+  // @ts-ignore
+  export type { TransactionErrorDialog } from './components/transaction-error-dialog'
+  import('./components/transaction-error-dialog')
   // @ts-ignore
   export type { LitMixin } from './mixins/tailwind-integration'
   import('./mixins/tailwind-integration')
