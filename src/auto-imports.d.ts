@@ -23,6 +23,7 @@ declare global {
   const css: typeof import('lit').css
   const customElement: typeof import('lit/decorators.js').customElement
   const decode: typeof import('./utils/decode').decode
+  const formatRupiah: typeof import('./utils/format').formatRupiah
   const getAppId: typeof import('./utils/wx').getAppId
   const html: typeof import('lit').html
   const logger: typeof import('./utils/logger').logger

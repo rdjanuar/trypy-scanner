@@ -73,30 +73,31 @@ export type Decode = (
 
 
 function getIdentifier() {
-  return new Promise((resolve, reject) => {
-    try {
-      window.wx.getStorage({
-      key: 'account-binding-storage',
-      success(res: any) {
-        const parsedData = JSON.parse(res.data)
-        resolve(parsedData.state.activeAcc.identifier)
-      },
-      fail() {
-        window.wx.getStorage({
-          key: 'msisdn',
-          success(res: any) {
-            const parsedData = JSON.parse(res.data)
-            resolve(parsedData.msisdn)
-          }
-        })
+  try {
+    let data = window.wx.getStorageSync('account-binding-storage');
+    if (data) {
+      if (typeof data === 'object' && data.data) data = data.data;
+      const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
+      if (parsedData?.state?.activeAcc?.identifier) {
+        return parsedData.state.activeAcc.identifier;
       }
-    })
-      
-    } catch (error) {
-      reject(error)
     }
-   
-  })
+  } catch (error) {
+  }
+
+  try {
+    let data = window.wx.getStorageSync('msisdn');
+    if (data) {
+      if (typeof data === 'object' && data.data) data = data.data;
+      const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
+      if (parsedData?.msisdn) {
+        return parsedData.msisdn;
+      }
+    }
+  } catch (error) {
+  }
+
+  return undefined;
 }
 
 
@@ -111,13 +112,14 @@ export const decode: Decode = async (params, activeLogger = logger) => {
     return
   }
 
+
   const result = await request('aggregator/payment-methods/qr/decode', {
     method: "POST",
-    body: async (nativeData) => ({
+    body: (nativeData) => ({
        channel: 'i1',
-        transaction_id: nativeData.transaction_id,
+        transaction_id: nativeData?.transaction_id,
         customer_details: {
-          customer_phone: await getIdentifier()
+          customer_phone: getIdentifier()
         },
         payment_info: {
           payment_provider: paymentInfo,

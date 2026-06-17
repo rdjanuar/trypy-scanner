@@ -175,6 +175,7 @@ export async function request<T = any>(url: string, options: RequestOptions = {}
   }
 
   activeLogger.add('INFO', `[request] ${options.method || 'GET'} ${fullUrl}`);
+  activeLogger.add('INFO', `[request] body - ${JSON.stringify(finalBody, null, 2)}`)
 
   try {
     const response = await fetch(fullUrl, {

@@ -32,8 +32,8 @@ export class PaymentBottomSheet extends TwLitElement {
   @property({ type: String })
   paymentMethod = 'GoPay';
 
-  @property({ type: String })
-  balance = 'Rp100.000';
+  @property({ type: Number })
+  balance = 100000;
 
   private _resizeObserver?: ResizeObserver;
 
@@ -78,7 +78,7 @@ export class PaymentBottomSheet extends TwLitElement {
               <div class="flex gap-1.5 items-center">
                 <p class="text-strong text-xs font-semibold">LinkAja</p>
                 <div class="size-1.5 rounded-full bg-disabled"></div>
-                <p class="text-strong text-xs font-semibold">Rp20.000.000</p>
+                <p class="text-strong text-xs font-semibold">${formatRupiah(this.balance)}</p>
               </div>
             </div>
             <ui-button variant="ghost" @click="${this._onUbahClick}">Ubah</ui-button>
