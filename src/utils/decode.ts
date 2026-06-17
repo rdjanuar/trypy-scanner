@@ -109,7 +109,7 @@ export const decode: Decode = async (params, options = {}) => {
   const urlParams = new URLSearchParams(window.location.search);
   const paymentInfo = urlParams.get('payment_info')
   const validateQr = validateEmvcoQR(params.data)
-  const activeLogger = options.logger ?? logger
+  const activeLogger = options?.logger ?? logger
 
   if(!validateQr.valid) {
     alert(validateQr.reason || 'QR Tidak Valid')
