@@ -26,12 +26,9 @@ importers:
       qr-scanner:
         specifier: ^1.4.2
         version: 1.4.2
-      tailwind-merge:
-        specifier: ^3.6.0
-        version: 3.6.0
       tailwind-variants:
         specifier: ^3.2.2
-        version: 3.2.2(tailwind-merge@3.6.0)(tailwindcss@4.3.1)
+        version: 3.2.2(tailwindcss@4.3.1)
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.3.1
@@ -504,9 +501,6 @@ packages:
 
   strip-literal@3.1.0:
     resolution: {integrity: sha512-8r3mkIM/2+PpjHoOtiAW8Rg3jJLHaV7xPwG+YRGrv6FP0wwk/toTpATxWYOW0BKdWwl82VT2tFYi5DlROa0Mxg==}
-
-  tailwind-merge@3.6.0:
-    resolution: {integrity: sha512-uxL7qAVQriqRQPAyK3pj66VqskWqoZ37PW94jwOTwNfq/z9oyu1V+eqrZqtR2+fCiXdYOZe/Modt8GtvqNzu+w==}
 
   tailwind-variants@3.2.2:
     resolution: {integrity: sha512-Mi4kHeMTLvKlM98XPnK+7HoBPmf4gygdFmqQPaDivc3DpYS6aIY6KiG/PgThrGvii5YZJqRsPz0aPyhoFzmZgg==}
@@ -990,13 +984,9 @@ snapshots:
     dependencies:
       js-tokens: 9.0.1
 
-  tailwind-merge@3.6.0: {}
-
-  tailwind-variants@3.2.2(tailwind-merge@3.6.0)(tailwindcss@4.3.1):
+  tailwind-variants@3.2.2(tailwindcss@4.3.1):
     dependencies:
       tailwindcss: 4.3.1
-    optionalDependencies:
-      tailwind-merge: 3.6.0
 
   tailwindcss@4.3.1: {}
 
