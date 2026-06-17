@@ -140,7 +140,7 @@ export const decode: Decode = async (params, options = {}) => {
   const url = result?.data?.raw?.payment_response?.checkout_url
 
   if(url) {
-    options?.onSucess()
+    options?.onSucess?.()
     window.location.replace = url
   }
 
