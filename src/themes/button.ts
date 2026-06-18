@@ -43,7 +43,7 @@ export const buttonTheme = {
       variant: "solid",
       color: "primary",
       class: {
-        base: "bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-primary/50",
+        base: "bg-primary text-white hover:bg-primary/90 focus-visible:ring-primary/50",
       },
     },
     {

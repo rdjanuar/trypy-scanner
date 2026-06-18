@@ -33,9 +33,11 @@ export class TransactionErrorDialog extends TwLitElement {
             Maaf, terjadi kesalahan saat memproses transaksi. Silakan coba lagi.
           </p>
           
-          <div class="w-full">
+        
+        </div>
+          <div slot="footer" class="w-full">
             <ui-button 
-              color="primary" 
+              color="primary"
               block 
               size="xl"
               @click=${this._handleRetry}
@@ -43,7 +45,6 @@ export class TransactionErrorDialog extends TwLitElement {
               Coba Lagi
             </ui-button>
           </div>
-        </div>
       </ui-drawer>
     `;
   }

@@ -9,7 +9,7 @@ export const drawerTheme = tv({
     title: 'text-lg font-semibold leading-6 text-gray-900',
     description: 'mt-1 text-sm text-gray-500',
     body: 'relative flex-1 px-4 sm:px-6 overflow-y-auto',
-    footer: 'px-4 py-4 sm:px-6',
+    footer: 'px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6',
   },
   variants: {
     direction: {

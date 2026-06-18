@@ -328,10 +328,13 @@ export class QrisScanner extends TwLitElement {
         </div>
       ` : ''}
       
-    
       <div class="absolute inset-0 z-1">
         <video id="qr-video" playsinline autoplay muted></video>
       </div>
+      
+      ${this._decodeTask.status !== TaskStatus.PENDING ? html`
+        <div class="absolute top-0 inset-x-0 h-80 bg-linear-to-b from-black to-transparent pointer-events-none z-1"></div>
+      ` : ''}
       
       <div class="absolute inset-0 z-2 flex flex-col pointer-events-none">
         <div class="mx-auto mt-5 bg-strong/70 px-4 py-2.5 rounded-[40px] text-sm font-medium flex items-center gap-2 border border-white/25 pointer-events-auto cursor-pointer" @click=${this._onHeaderTap}>

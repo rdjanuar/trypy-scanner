@@ -91,7 +91,7 @@ export class PaymentBottomSheet extends TwLitElement {
       </div>
 
       <payment-selector-drawer 
-        ?open=${this.isDrawerOpen} 
+        ?open=${this.isDrawerOpen}
         @close=${() => this.isDrawerOpen = false}
         @select=${(e: CustomEvent) => {
           this.logger?.add('INFO', `Selected payment method: ${e.detail.method}`);
