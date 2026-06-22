@@ -121,7 +121,7 @@ export class QrisScanner extends TwLitElement {
     this.isScanCooldown = true;
     setTimeout(() => {
       this.isScanCooldown = false;
-    }, 3000);
+    }, 1000);
   }
 
 
