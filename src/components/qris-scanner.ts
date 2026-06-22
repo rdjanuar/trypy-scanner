@@ -56,12 +56,11 @@ export class QrisScanner extends TwLitElement {
     this.bottomSheetHeight = e.detail.height;
   }
 
-  private onWebViewEventEmit(e: {
+  private onWebViewEventEmit = (e: {
     message: Status
-  }) {
+  }) => {
     logger.add('DEBUG', `status message - ${e.message}`)
     this.status = e.message
-
   }
 
   connectedCallback() {
