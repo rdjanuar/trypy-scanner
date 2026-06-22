@@ -164,8 +164,8 @@ export class QrisScanner extends TwLitElement {
   private onSendQrCode(qr: string) {
     logger.add('DEBUG', `QR RESULT ${qr}`)
     if(window.wx.miniProgram?.sendWebviewEvent) {
-      logger.add('DEBUG', 'postMessage readyState')
-      window.wx.miniProgram.postMessage({
+      logger.add('DEBUG', 'sendWebviewEvent QR readyState')
+      window.wx.miniProgram.sendWebviewEvent({
         data: {
           qr
         }
