@@ -42,6 +42,8 @@ export class QrisScanner extends TwLitElement {
 
   private mediaStream?: MediaStream;
   private scanInterval?: ReturnType<typeof setInterval>;
+  private progressInterval?: ReturnType<typeof setInterval>;
+  private isScanCooldown = false;
 
   firstUpdated() {
     logger.add('DEBUG', `User Agent ${JSON.stringify(window.navigator.userAgent)}`)
@@ -73,11 +75,55 @@ export class QrisScanner extends TwLitElement {
     super.disconnectedCallback();
     this.stopCamera();
     window.wx.miniProgram.offWebviewEvent(this.onWebViewEventEmit)
+    if(this.progressInterval) {
+      clearInterval(this.progressInterval);
+      this.progressInterval = undefined;
+    }
   }
 
-  private resetScanner() {
-    this.scanning = false
+  willUpdate(changedProperties: Map<string | number | symbol, unknown>) {
+    if (changedProperties.has('status')) {
+      this.onStatusChanged(this.status);
+    }
   }
+
+  private onStatusChanged(newStatus: Status) {
+    if (newStatus === 'error') {
+      this.isTransactionErrorOpen = true;
+    }
+
+    if (this.progressInterval) {
+      clearInterval(this.progressInterval);
+      this.progressInterval = undefined;
+    }
+
+    if (newStatus === 'loading') {
+      this.scanProgress = 0;
+      this.progressInterval = setInterval(() => {
+        if (this.scanProgress < 90) {
+          this.scanProgress += Math.floor(Math.random() * 5) + 2;
+          if (this.scanProgress > 90) {
+            this.scanProgress = 90;
+          }
+        } else {
+          if (this.progressInterval) {
+            clearInterval(this.progressInterval);
+            this.progressInterval = undefined;
+          }
+        }
+      }, 150);
+    } else {
+      this.scanProgress = 0;
+    }
+  }
+
+  private triggerCooldown() {
+    this.isScanCooldown = true;
+    setTimeout(() => {
+      this.isScanCooldown = false;
+    }, 3000);
+  }
+
 
   private async startCamera() {
     this.errorMessage = '';
@@ -178,12 +224,13 @@ export class QrisScanner extends TwLitElement {
 
     this.scanInterval = setInterval(async () => {
       if(!this.videoElement || this.videoElement.readyState < 2) return;
-      if(this.status === 'loading') return
+      if(this.status !== 'idle' || this.isScanCooldown) return;
       try {
         const result = await QrScanner.scanImage(this.videoElement, {
           returnDetailedScanResult: true
         });
         if(result?.data) {
+          this.triggerCooldown();
           this.onSendQrCode(result.data)
           this.dispatchEvent(new CustomEvent('qr-scanned', { detail: result.data }));
         }
@@ -242,6 +289,7 @@ export class QrisScanner extends TwLitElement {
       this.logger.add('INFO', 'Scanning uploaded image for QR code...');
       const result = await QrScanner.scanImage(file, { returnDetailedScanResult: true });
       if(result?.data) {
+        this.triggerCooldown();
         this.onSendQrCode(result.data)
         this.logger.add('INFO', `Decoded QR code from image: ${result.data}`);
         this.dispatchEvent(new CustomEvent('qr-scanned', { detail: result.data }));
@@ -363,11 +411,13 @@ export class QrisScanner extends TwLitElement {
         ?open=${this.isTransactionErrorOpen}
         @close=${() => {
       this.isTransactionErrorOpen = false
-      this.resetScanner()
+      this.status = 'idle'
+      this.triggerCooldown()
     }}
         @retry=${() => {
       this.isTransactionErrorOpen = false;
-      this.resetScanner()
+      this.status = 'idle'
+      this.triggerCooldown()
     }}
       ></transaction-error-dialog>
     `;
