@@ -17,13 +17,11 @@ declare global {
   const Task: typeof import('@lit/task').Task
   const TaskStatus: typeof import('@lit/task').TaskStatus
   const TransactionErrorDialog: typeof import('./components/transaction-error-dialog').TransactionErrorDialog
-  const UiDrawer: typeof import("./components/ui/drawer").UiDrawer
   const consume: typeof import('@lit/context').consume
   const createContext: typeof import('@lit/context').createContext
   const createRef: typeof import('lit/directives/ref.js').createRef
   const css: typeof import('lit').css
   const customElement: typeof import('lit/decorators.js').customElement
-  const decode: typeof import('./utils/decode').decode
   const formatRupiah: typeof import('./utils/format').formatRupiah
   const getAppId: typeof import('./utils/wx').getAppId
   const html: typeof import('lit').html
@@ -41,14 +39,9 @@ declare global {
   const routerContext: typeof import('./contexts/router.context').routerContext
   const state: typeof import('lit/decorators.js').state
   const tv: typeof import('./libs/tv').tv
-  const validateCRC: typeof import('./utils/decode').validateCRC
-  const validateEmvcoQR: typeof import('./utils/decode').validateEmvcoQR
 }
 // for type re-export
 declare global {
-  // @ts-ignore
-  export type { EmvcoResult, Decode } from './utils/decode'
-  import('./utils/decode')
   // @ts-ignore
   export type { NativeData, DataFactory, RequestOptions } from './libs/request'
   import('./libs/request')
