@@ -175,10 +175,10 @@ export class QrisScanner extends TwLitElement {
     if(this.scanning) return;
     this.logger.add('INFO', 'QR scanning started (interval: 300ms)');
     this.scanning = true;
-    if(this.status === 'loading') return
 
     this.scanInterval = setInterval(async () => {
       if(!this.videoElement || this.videoElement.readyState < 2) return;
+      if(this.status === 'loading') return
       try {
         const result = await QrScanner.scanImage(this.videoElement, {
           returnDetailedScanResult: true
