@@ -59,7 +59,7 @@ export class QrisScanner extends TwLitElement {
   private onWebViewEventEmit(e: {
     message: Status
   }) {
-    logger.add('DEBUG', JSON.stringify(e, null, 2))
+    logger.add('DEBUG', `status message - ${e.message}`)
     this.status = e.message
 
   }
@@ -166,9 +166,7 @@ export class QrisScanner extends TwLitElement {
     if(window.wx.miniProgram?.sendWebviewEvent) {
       logger.add('DEBUG', 'sendWebviewEvent QR readyState')
       window.wx.miniProgram.sendWebviewEvent({
-        data: {
-          qr
-        }
+        qr
       })
     }
 
@@ -296,7 +294,7 @@ export class QrisScanner extends TwLitElement {
 
   partialRenderContentStatus() {
     if(this.status === 'loading') {
-      return `<div class="absolute inset-0 z-9999 bg-white flex flex-col items-center justify-center">
+      return html`<div class="absolute inset-0 z-9999 bg-white flex flex-col items-center justify-center">
             <lottie-animation .animationData=${loadingPaymentJson}></lottie-animation>
             <div class="space-y-2 text-center">
              <p class="text-strong font-semibold text-base">Tunggu sebentar ya...</p>
@@ -313,7 +311,7 @@ export class QrisScanner extends TwLitElement {
 
   protected render() {
     return html`
-      ${html`${this.partialRenderContentStatus()}`}
+      ${this.partialRenderContentStatus()}
 
       ${this.isCameraDenied ? html`
         <div class="absolute inset-0 z-2 bg-strong flex flex-col items-center justify-center p-6 text-center pointer-events-auto">
