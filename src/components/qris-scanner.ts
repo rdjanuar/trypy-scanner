@@ -374,7 +374,7 @@ export class QrisScanner extends TwLitElement {
   }
 
   partialRenderContentStatus() {
-    if (this.status === 'loading' || this.status === 'success') {
+    if (this.status === 'loading') {
       return html`<div class="absolute inset-0 z-9999 bg-white flex flex-col items-center justify-center">
         <lottie-animation .animationData=${loadingPaymentJson}></lottie-animation>
         <div class="space-y-2 text-center">
