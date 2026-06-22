@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "warn",
+    "suspicious": "warn",
+    "pedantic": "off"
+  },
+  "rules": {
+    "no-unused-vars": "off",
+    "eslint/no-unused-vars": "off",
+    "typescript/no-useless-empty-export": "off",
+    "unicorn/require-module-specifiers": "off",
+    "no-underscore-dangle": "off",
+    "no-console": [
+      "warn",
+      {
+        "allow": ["warn", "error"]
+      }
+    ]
+  },
+  "ignorePatterns": ["dist", "node_modules", "src/auto-imports.d.ts"],
+  "overrides": [
+    {
+      "files": ["src/components/logger.ts"],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ]
+}

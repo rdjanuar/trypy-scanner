@@ -1,8 +1,8 @@
-import { Router } from '@lit-labs/router';
-import type { AppRouter } from './contexts/router.context';
+import { Router } from '@lit-labs/router'
+import type { AppRouter } from './contexts/router.context'
 import './pages/index'
 
-const TwLitElement = TW(LitElement);
+const TwLitElement = TW(LitElement)
 
 @customElement('app-root')
 export class AppRoot extends TwLitElement {
@@ -13,28 +13,28 @@ export class AppRoot extends TwLitElement {
     },
     {
       path: '/about',
-      render: () => html`<p class="text-red-500">about</p>`
-    }
-  ]);
+      render: () => html`<p class="text-red-500">about</p>`,
+    },
+  ])
 
   @provide({ context: routerContext })
   private appRouter: AppRouter = {
     goto: (path: string) => {
       const navigate = () => {
-        window.history.pushState({}, '', path);
-        this.router.goto(path);
-      };
+        window.history.pushState({}, '', path)
+        this.router.goto(path)
+      }
 
       if (document.startViewTransition) {
-        document.startViewTransition(() => navigate());
+        document.startViewTransition(() => navigate())
       } else {
-        navigate();
+        navigate()
       }
-    }
-  };
+    },
+  }
 
   protected render() {
-    void this.appRouter;
-    return html`${this.router.outlet()}`;
+    void this.appRouter
+    return html`${this.router.outlet()}`
   }
 }

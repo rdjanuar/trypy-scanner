@@ -17,7 +17,7 @@ declare global {
   const Task: typeof import('@lit/task').Task
   const TaskStatus: typeof import('@lit/task').TaskStatus
   const TransactionErrorDialog: typeof import('./components/transaction-error-dialog').TransactionErrorDialog
-  const UiDrawer: typeof import('./components/ui/drawer').UiDrawer
+  const UiDrawer: typeof import("./components/ui/drawer").UiDrawer
   const consume: typeof import('@lit/context').consume
   const createContext: typeof import('@lit/context').createContext
   const createRef: typeof import('lit/directives/ref.js').createRef

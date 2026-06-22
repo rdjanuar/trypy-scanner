@@ -1,4 +1,4 @@
-import { tv } from '../libs/tv';
+import { tv } from '../libs/tv'
 
 export const drawerTheme = tv({
   slots: {
@@ -28,7 +28,7 @@ export const drawerTheme = tv({
       bottom: {
         wrapper: 'items-end',
         base: 'w-full h-auto max-h-[80vh] inset-x-0 bottom-0 rounded-t-xl',
-      }
+      },
     },
     isOpen: {
       true: {
@@ -36,8 +36,8 @@ export const drawerTheme = tv({
       },
       false: {
         overlay: 'opacity-0 pointer-events-none',
-      }
-    }
+      },
+    },
   },
   compoundVariants: [
     { direction: 'right', isOpen: false, class: { base: 'translate-x-full' } },
@@ -47,10 +47,10 @@ export const drawerTheme = tv({
     { direction: 'top', isOpen: false, class: { base: '-translate-y-full' } },
     { direction: 'top', isOpen: true, class: { base: 'translate-y-0' } },
     { direction: 'bottom', isOpen: false, class: { base: 'translate-y-full' } },
-    { direction: 'bottom', isOpen: true, class: { base: 'translate-y-0' } }
+    { direction: 'bottom', isOpen: true, class: { base: 'translate-y-0' } },
   ],
   defaultVariants: {
     direction: 'right',
-    isOpen: false
-  }
-});
+    isOpen: false,
+  },
+})
