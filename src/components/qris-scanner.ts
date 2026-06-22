@@ -164,7 +164,7 @@ export class QrisScanner extends TwLitElement {
   private onSendQrCode(qr: string) {
     logger.add('DEBUG', `QR RESULT ${qr}`)
     if(window.wx.miniProgram?.sendWebviewEvent) {
-      logger.add('DEBUG', 'sendWebviewEvent readyState')
+      logger.add('DEBUG', 'postMessage readyState')
       window.wx.miniProgram.postMessage({
         data: {
           qr
@@ -176,8 +176,9 @@ export class QrisScanner extends TwLitElement {
 
   private startQrScanning() {
     if(this.scanning) return;
-    this.scanning = true;
     this.logger.add('INFO', 'QR scanning started (interval: 300ms)');
+    this.scanning = true;
+    if(this.status === 'loading') return
 
     this.scanInterval = setInterval(async () => {
       if(!this.videoElement || this.videoElement.readyState < 2) return;
