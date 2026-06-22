@@ -3,6 +3,7 @@ import loadingPaymentJson from '../assets/lotties/loading-payment.json';
 import qrisIcon from '../assets/icons/qris.svg';
 import dayIcon from '../assets/icons/day.svg';
 import galeryIcon from '../assets/icons/galery.svg';
+import type { Status } from '../types';
 
 const TwLitElement = TW(LitElement)
 
@@ -11,48 +12,15 @@ export class QrisScanner extends TwLitElement {
   @provide({ context: loggerContext })
   logger: ILogger = logger;
 
-  @state()
-  private scannedQrData = '';
 
   @state()
   private scanProgress = 0;
-
-  private _decodeTask = new Task(this, {
-    task: async ([qrData]) => {
-      if (!qrData) return;
-      this.logger.add('INFO', `Processing QR data: ${qrData.substring(0, 80)}...`);
-      
-      this.scanProgress = 0;
-      const interval = setInterval(() => {
-        if (this.scanProgress < 95) {
-          this.scanProgress += Math.random() * 5 + 2;
-        }
-      }, 100);
-
-      try {
-        await decode({ data: qrData }, {
-          onSucess: () => {
-            this.resetScanner()
-          }
-        });
-      } finally {
-        clearInterval(interval);
-        this.scanProgress = 100;
-      }
-      return qrData;
-    },
-  
-    onError:() => {
-      this.isTransactionErrorOpen = true;
-    },
-    args: () => [this.scannedQrData],
-  });
 
   @query('#qr-video')
   videoElement!: HTMLVideoElement;
 
   @state()
-  flashOn = false;
+  private flashOn = false;
 
   @state()
   errorMessage = '';
@@ -65,6 +33,10 @@ export class QrisScanner extends TwLitElement {
 
   @state()
   private bottomSheetHeight = 0;
+
+  @state()
+  status: Status = 'idle'
+
 
   @state()
   isTransactionErrorOpen = false;
@@ -84,20 +56,32 @@ export class QrisScanner extends TwLitElement {
     this.bottomSheetHeight = e.detail.height;
   }
 
- 
+  private onWebViewEventEmit(e: {
+    message: Status
+  }) {
+    this.status = e.message
+
+  }
+
+  connectedCallback() {
+    super.connectedCallback()
+    window.wx.miniProgram.onWebviewEvent(this.onWebViewEventEmit)
+  }
+
+
   disconnectedCallback() {
     super.disconnectedCallback();
     this.stopCamera();
+    window.wx.miniProgram.offWebviewEvent(this.onWebViewEventEmit)
   }
 
   private resetScanner() {
-      this.scanning = false
-      this.scannedQrData = ''
+    this.scanning = false
   }
 
   private async startCamera() {
     this.errorMessage = '';
-    if (!this.videoElement) {
+    if(!this.videoElement) {
       this.errorMessage = 'Video element not found';
       this.logger.add('ERROR', 'Video element not found in Shadow DOM');
       return;
@@ -112,7 +96,7 @@ export class QrisScanner extends TwLitElement {
 
       this.logger.add('INFO', 'Got media stream (environment camera)');
       const track = this.mediaStream.getVideoTracks()[0];
-      if (track) {
+      if(track) {
         const settings = track.getSettings();
         this.logger.add('DEBUG', `Camera: ${track.label} | ${settings.width}x${settings.height}`);
       }
@@ -122,7 +106,7 @@ export class QrisScanner extends TwLitElement {
       this.logger.add('INFO', 'Video playing');
 
       this.startQrScanning();
-    } catch (err) {
+    } catch(err) {
       this.logger.add('WARN', `Environment camera failed: ${err}`);
       console.error('Camera error:', err);
       try {
@@ -133,9 +117,9 @@ export class QrisScanner extends TwLitElement {
         this.videoElement.srcObject = this.mediaStream;
         await this.videoElement.play();
         this.startQrScanning();
-      } catch (fallbackErr) {
+      } catch(fallbackErr) {
         this.logger.add('ERROR', `All cameras failed: ${fallbackErr}`);
-        if (fallbackErr instanceof Error && fallbackErr.name === 'NotAllowedError') {
+        if(fallbackErr instanceof Error && fallbackErr.name === 'NotAllowedError') {
           this.isCameraDenied = true;
           this.errorMessage = 'Akses kamera ditolak. Mohon izinkan akses kamera di pengaturan browser Anda, lalu muat ulang halaman.';
           this.checkPermissionStatus();
@@ -153,11 +137,11 @@ export class QrisScanner extends TwLitElement {
       this.isCameraDenied = perm.state === 'denied';
       perm.onchange = () => {
         this.isCameraDenied = perm.state === 'denied';
-        if (perm.state === 'granted') {
+        if(perm.state === 'granted') {
           this.startCamera();
         }
       };
-    } catch (e) {
+    } catch(e) {
       this.logger.add('WARN', 'Permissions API not supported for camera');
     }
   }
@@ -165,33 +149,41 @@ export class QrisScanner extends TwLitElement {
   private async retryCamera() {
     try {
       const perm = await navigator.permissions.query({ name: 'camera' as PermissionName });
-      if (perm.state === 'denied') {
+      if(perm.state === 'denied') {
         window.location.reload();
         return;
       }
-    } catch (e) {
+    } catch(e) {
       // Ignored
     }
     this.isCameraDenied = false;
     this.startCamera();
   }
 
+  private onSendQrCode(qr: string) {
+    if('sendWebviewEvent' in window.wx.miniProgram) {
+      window.wx.miniProgram.sendWebviewEvent({
+        data: {
+          qr
+        }
+      })
+    }
+
+  }
+
   private startQrScanning() {
-    if (this.scanning) return;
-    this.scannedQrData = ''
+    if(this.scanning) return;
     this.scanning = true;
     this.logger.add('INFO', 'QR scanning started (interval: 300ms)');
 
     this.scanInterval = setInterval(async () => {
-      if (!this.videoElement || this.videoElement.readyState < 2) return;
-      if (this._decodeTask.status === TaskStatus.PENDING) return;
+      if(!this.videoElement || this.videoElement.readyState < 2) return;
       try {
         const result = await QrScanner.scanImage(this.videoElement, {
           returnDetailedScanResult: true
         });
-        if (result?.data) {
-          this.scannedQrData = result.data;
-          console.log('Decoded QR code:', result.data);
+        if(result?.data) {
+          this.onSendQrCode(result.data)
           this.dispatchEvent(new CustomEvent('qr-scanned', { detail: result.data }));
         }
       } catch {
@@ -201,25 +193,25 @@ export class QrisScanner extends TwLitElement {
 
   private stopCamera() {
     logger.add('INFO', 'Stopping camera');
-    if (this.scanInterval) {
+    if(this.scanInterval) {
       clearInterval(this.scanInterval);
       this.scanInterval = undefined;
     }
     this.scanning = false;
-    if (this.mediaStream) {
+    if(this.mediaStream) {
       this.mediaStream.getTracks().forEach(track => track.stop());
       this.mediaStream = undefined;
     }
   }
 
   private toggleFlash() {
-    if (!this.mediaStream) return;
+    if(!this.mediaStream) return;
     const track = this.mediaStream.getVideoTracks()[0];
-    if (!track) return;
+    if(!track) return;
 
     try {
       const capabilities = track.getCapabilities() as any;
-      if (capabilities?.torch) {
+      if(capabilities?.torch) {
         this.flashOn = !this.flashOn;
         track.applyConstraints({ advanced: [{ torch: this.flashOn } as any] });
         this.logger.add('INFO', `Flash ${this.flashOn ? 'ON' : 'OFF'}`);
@@ -227,7 +219,7 @@ export class QrisScanner extends TwLitElement {
         this.logger.add('WARN', 'Torch not supported on this device');
         console.warn('Torch not supported on this device');
       }
-    } catch (err) {
+    } catch(err) {
       this.logger.add('ERROR', `Flash error: ${err}`);
       console.warn('Flash not supported', err);
     }
@@ -241,20 +233,19 @@ export class QrisScanner extends TwLitElement {
   }
 
   private async _onFileSelected(e: Event) {
-    this.scannedQrData = ''
     const target = e.target as HTMLInputElement;
     const file = target.files?.[0];
-    if (!file) return;
+    if(!file) return;
 
     try {
       this.logger.add('INFO', 'Scanning uploaded image for QR code...');
       const result = await QrScanner.scanImage(file, { returnDetailedScanResult: true });
-      if (result?.data) {
-        this.scannedQrData = result.data;
+      if(result?.data) {
+        this.onSendQrCode(result.data)
         this.logger.add('INFO', `Decoded QR code from image: ${result.data}`);
         this.dispatchEvent(new CustomEvent('qr-scanned', { detail: result.data }));
       }
-    } catch (err) {
+    } catch(err) {
       this.logger.add('ERROR', `Failed to decode QR from image: ${err}`);
       this.errorMessage = 'QR Code tidak ditemukan pada gambar.';
       setTimeout(() => { this.errorMessage = ''; }, 3000);
@@ -274,10 +265,10 @@ export class QrisScanner extends TwLitElement {
 
   private _onHeaderTap() {
     this._tapCount++;
-    if (this._tapTimer) clearTimeout(this._tapTimer);
+    if(this._tapTimer) clearTimeout(this._tapTimer);
     this._tapTimer = setTimeout(() => { this._tapCount = 0; }, 500);
 
-    if (this._tapCount >= 3) {
+    if(this._tapCount >= 3) {
       this._tapCount = 0;
       this.toggleDebugLog();
     }
@@ -299,22 +290,26 @@ export class QrisScanner extends TwLitElement {
     this.logger.toggle();
   }
 
-  protected render() {
-    return html`
-      ${this._decodeTask.render({
-        pending: () => html`
-          <div class="absolute inset-0 z-9999 bg-white flex flex-col items-center justify-center">
+  partialRenderContentStatus() {
+    if(this.status === 'loading') {
+      return `<div class="absolute inset-0 z-9999 bg-white flex flex-col items-center justify-center">
             <lottie-animation .animationData=${loadingPaymentJson}></lottie-animation>
             <div class="space-y-2 text-center">
-            <p class="text-strong font-semibold text-base">Tunggu sebentar ya...</p>
+             <p class="text-strong font-semibold text-base">Tunggu sebentar ya...</p>
             <p class="text-secondary text-sm font-normal">Transaksimu sedang kami proses</p>
             <ui-progress-bar value=${this.scanProgress} max="100" size="sm" .ui=${{
-              base: 'mt-6'
-            }}></ui-progress-bar>
+        base: 'mt-6'
+      }}></ui-progress-bar>
             </div>
-          </div>
-        `
-      })}
+          </div>`
+    }
+
+    return nothing
+  }
+
+  protected render() {
+    return html`
+      ${html`${this.partialRenderContentStatus()}`}
 
       ${this.isCameraDenied ? html`
         <div class="absolute inset-0 z-2 bg-strong flex flex-col items-center justify-center p-6 text-center pointer-events-auto">
@@ -333,7 +328,7 @@ export class QrisScanner extends TwLitElement {
         <video id="qr-video" playsinline autoplay muted></video>
       </div>
       
-      ${this._decodeTask.status !== TaskStatus.PENDING ? html`
+      ${this.status === 'idle' ? html`
         <div class="absolute top-0 inset-x-0 h-80 bg-linear-to-b from-black to-transparent pointer-events-none z-1"></div>
       ` : ''}
       
@@ -366,13 +361,13 @@ export class QrisScanner extends TwLitElement {
       <transaction-error-dialog
         ?open=${this.isTransactionErrorOpen}
         @close=${() => {
-          this.isTransactionErrorOpen = false
-          this.resetScanner()
-        }}
+      this.isTransactionErrorOpen = false
+      this.resetScanner()
+    }}
         @retry=${() => {
-          this.isTransactionErrorOpen = false;
-          this.resetScanner()
-        }}
+      this.isTransactionErrorOpen = false;
+      this.resetScanner()
+    }}
       ></transaction-error-dialog>
     `;
   }

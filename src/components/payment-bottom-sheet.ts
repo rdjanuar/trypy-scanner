@@ -1,4 +1,3 @@
-import type { AppRouter } from '../contexts/router.context';
 import secureIcon from '../assets/icons/secure.svg';
 
 const TwLitElement = TW(LitElement);
@@ -10,9 +9,6 @@ export class PaymentBottomSheet extends TwLitElement {
   @property({attribute: false})
   public logger?: ILogger
 
-  @consume({ context: routerContext })
-  @property({ attribute: false })
-  private router?: AppRouter
 
   static styles = css`
     .icon-decor::before {
@@ -68,7 +64,6 @@ export class PaymentBottomSheet extends TwLitElement {
   }
 
   protected render() {
-    void this.router;
     return html`
       <div class="sheet-root absolute bottom-0 left-0 w-full bg-white rounded-t-2xl px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] z-4 pointer-events-auto shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
         <div class="px-3 py-4 relative border border-stroke rounded-2xl">
