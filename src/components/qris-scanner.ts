@@ -66,9 +66,9 @@ export class QrisScanner extends TwLitElement {
     logger.add('DEBUG', `status message - ${e.message}`)
     const parsedMessage = JSON.parse(e.message)
     if (parsedMessage.type === 'status') {
-      this.status = parsedMessage.status
+      this.status = parsedMessage.data.status
     } else if (parsedMessage.type === 'url') {
-      window.location.href = encodeURIComponent(parsedMessage.url)
+      window.location.href = encodeURIComponent(parsedMessage.data.url)
     }
   }
 
