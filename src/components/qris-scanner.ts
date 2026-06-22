@@ -37,7 +37,6 @@ export class QrisScanner extends TwLitElement {
   @state()
   status: Status = 'idle'
 
-
   @state()
   isTransactionErrorOpen = false;
 
@@ -47,6 +46,7 @@ export class QrisScanner extends TwLitElement {
   firstUpdated() {
     logger.add('DEBUG', `User Agent ${JSON.stringify(window.navigator.userAgent)}`)
     logger.add('DEBUG', `Navigator ${JSON.stringify(window.navigator, null, 2)}`)
+    logger.add('DEBUG', `WX aviable function ${Object.keys(window.wx.miniProgram)}`)
     setTimeout(() => {
       this.startCamera();
     }, 300);
@@ -59,6 +59,7 @@ export class QrisScanner extends TwLitElement {
   private onWebViewEventEmit(e: {
     message: Status
   }) {
+    logger.add('DEBUG', JSON.stringify(e, null, 2))
     this.status = e.message
 
   }
@@ -161,7 +162,9 @@ export class QrisScanner extends TwLitElement {
   }
 
   private onSendQrCode(qr: string) {
-    if('sendWebviewEvent' in window.wx.miniProgram) {
+    logger.add('DEBUG', `QR RESULT ${qr}`)
+    if(window.wx.miniProgram?.sendWebviewEvent) {
+      logger.add('DEBUG', 'sendWebviewEvent readyState')
       window.wx.miniProgram.sendWebviewEvent({
         data: {
           qr
