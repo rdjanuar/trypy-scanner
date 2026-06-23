@@ -65,10 +65,13 @@ export class QrisScanner extends TwLitElement {
   private onWebViewEventEmit = (e: { message: Status }) => {
     logger.add('DEBUG', `status message - ${e.message}`)
     const parsedMessage = JSON.parse(e.message)
-    if (parsedMessage.type === 'status') {
-      this.status = parsedMessage.data.status
-    } else if (parsedMessage.type === 'url') {
-      window.location.href = encodeURIComponent(parsedMessage.data.url)
+
+    if (parsedMessage.scope === 'qr_scanner') {
+      if (parsedMessage.action === 'status') {
+        this.status = parsedMessage.data.status
+      } else if (parsedMessage.action === 'url') {
+        window.location.href = encodeURIComponent(parsedMessage.data.url)
+      }
     }
   }
 
@@ -241,7 +244,10 @@ export class QrisScanner extends TwLitElement {
       logger.add('DEBUG', 'sendWebviewEvent QR readyState')
       window.wx.miniProgram.sendWebviewEvent({
         scope: 'qr_scanner',
-        qr,
+        action: 'payment',
+        payload: {
+          qr,
+        },
       })
     } else {
       logger.add('ERROR', 'Failed to send QR: window.wx.miniProgram.sendWebviewEvent is undefined')
