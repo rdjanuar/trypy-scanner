@@ -39,6 +39,8 @@ declare global {
   const routerContext: typeof import('./contexts/router.context').routerContext
   const state: typeof import('lit/decorators.js').state
   const tv: typeof import('./libs/tv').tv
+  const uppercaseFirstLetter: typeof import('./utils/format').uppercaseFirstLetter
+  const uppercasefirstletter: typeof import('./utils/format').uppercasefirstletter
 }
 // for type re-export
 declare global {

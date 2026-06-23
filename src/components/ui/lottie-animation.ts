@@ -20,8 +20,23 @@ export class LottieAnimation extends LitElement {
   @property({ type: Object })
   animationData?: any
 
+  @property({ type: String })
+  width = ''
+
+  @property({ type: String })
+  height = ''
+
   containerRef = createRef<HTMLDivElement>()
   animationInstance: any = null
+
+  willUpdate(changedProperties: Map<PropertyKey, unknown>) {
+    if (changedProperties.has('width')) {
+      this.style.width = this.width || ''
+    }
+    if (changedProperties.has('height')) {
+      this.style.height = this.height || ''
+    }
+  }
 
   firstUpdated() {
     if (!this.containerRef.value) return

@@ -1,6 +1,6 @@
-import { Router } from '@lit-labs/router'
 import type { AppRouter } from './contexts/router.context'
 import './pages/index'
+import './pages/payment'
 
 const TwLitElement = TW(LitElement)
 
@@ -12,8 +12,12 @@ export class AppRoot extends TwLitElement {
       render: () => html`<home-page></home-page>`,
     },
     {
-      path: '/about',
-      render: () => html`<p class="text-red-500">about</p>`,
+      path: '/payment',
+      render: () => {
+        const querParams = Object.fromEntries(new URLSearchParams(window.location.search))
+
+        return html`<payment-page .query=${querParams}></payment-page>`
+      },
     },
   ])
 

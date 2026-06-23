@@ -77,6 +77,7 @@ video {
 
 @theme static {
   --text-color-secondary: #757f90;
+  --text-color-primary: #181c21;
   --color-stroke: #dae0e9;
   --ui-border: #e5e5e5;
   --ui-text-strong: var(--color-strong);
