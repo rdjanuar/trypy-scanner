@@ -240,6 +240,7 @@ export class QrisScanner extends TwLitElement {
     if (window.wx?.miniProgram?.sendWebviewEvent) {
       logger.add('DEBUG', 'sendWebviewEvent QR readyState')
       window.wx.miniProgram.sendWebviewEvent({
+        scope: 'qr_scanner',
         qr,
       })
     } else {
