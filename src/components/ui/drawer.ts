@@ -17,15 +17,15 @@ export class UiDrawer extends TwLitElement {
   @property({ type: Object }) ui: ExtractUi<typeof drawerTheme> = {}
   @property() portal: boolean | string | HTMLElement = false
 
-  @state() private _renderState = false
-  @state() private _animateState = false
+  @state() private renderState = false
+  @state() private animateState = false
 
   willUpdate(changedProperties: Map<string, any>) {
     if (changedProperties.has('open')) {
       if (this.open) {
-        this._renderState = true
+        this.renderState = true
       } else {
-        this._animateState = false
+        this.animateState = false
       }
     }
   }
@@ -35,13 +35,13 @@ export class UiDrawer extends TwLitElement {
       if (this.open) {
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            this._animateState = true
+            this.animateState = true
           })
         })
       } else {
         setTimeout(() => {
           if (!this.open) {
-            this._renderState = false
+            this.renderState = false
           }
         }, 300)
       }
@@ -57,7 +57,7 @@ export class UiDrawer extends TwLitElement {
   private renderContent() {
     const theme = drawerTv({
       direction: this.direction,
-      isOpen: this._animateState,
+      isOpen: this.animateState,
     })
 
     return html`
@@ -140,7 +140,7 @@ export class UiDrawer extends TwLitElement {
   }
 
   protected render() {
-    if (!this.open && !this._renderState) {
+    if (!this.open && !this.renderState) {
       return nothing
     }
 

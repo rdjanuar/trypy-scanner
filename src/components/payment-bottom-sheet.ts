@@ -29,14 +29,14 @@ export class PaymentBottomSheet extends TwLitElement {
   @property({ type: Number })
   balance = 100000
 
-  private _resizeObserver?: ResizeObserver
+  private resizeObserver?: ResizeObserver
 
   @query('.sheet-root')
   private sheetRoot!: HTMLDivElement
 
   firstUpdated() {
     if (this.sheetRoot) {
-      this._resizeObserver = new ResizeObserver(([entry]) => {
+      this.resizeObserver = new ResizeObserver(([entry]) => {
         const height = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height
         this.dispatchEvent(
           new CustomEvent('sheet-resize', {
@@ -46,21 +46,21 @@ export class PaymentBottomSheet extends TwLitElement {
           }),
         )
       })
-      this._resizeObserver.observe(this.sheetRoot)
+      this.resizeObserver.observe(this.sheetRoot)
     }
   }
 
   @state()
   isDrawerOpen = false
 
-  private _onUbahClick() {
+  private onUbahClick() {
     logger.add('DEBUG', 'Change Payment Method clicked')
     this.isDrawerOpen = true
   }
 
   disconnectedCallback() {
     super.disconnectedCallback()
-    this._resizeObserver?.disconnect()
+    this.resizeObserver?.disconnect()
   }
 
   protected render() {
@@ -78,7 +78,7 @@ export class PaymentBottomSheet extends TwLitElement {
                 <p class="text-strong text-xs font-semibold">${formatRupiah(this.balance)}</p>
               </div>
             </div>
-            <ui-button variant="ghost" @click="${this._onUbahClick}">Ubah</ui-button>
+            <ui-button variant="ghost" @click="${this.onUbahClick}">Ubah</ui-button>
           </div>
         </div>
         <div class="mt-3 flex items-center justify-center gap-1">

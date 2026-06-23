@@ -5,18 +5,18 @@ export class TransactionErrorDialog extends TwLitElement {
   @property({ type: Boolean })
   open = false
 
-  private _handleClose() {
+  private handleClose() {
     this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }))
   }
 
-  private _handleRetry() {
+  private handleRetry() {
     this.dispatchEvent(new CustomEvent('retry', { bubbles: true, composed: true }))
-    this._handleClose()
+    this.handleClose()
   }
 
   protected render() {
     return html`
-      <ui-drawer ?open=${this.open} direction="bottom" @close=${this._handleClose}>
+      <ui-drawer ?open=${this.open} direction="bottom" @close=${this.handleClose}>
         <div class="flex flex-col items-center text-center pt-6 pb-2 px-2">
           <!-- Image Placeholder -->
           <div class="w-[200px] h-[200px] bg-gray-100 rounded-2xl mb-6 flex items-center justify-center">
@@ -30,7 +30,7 @@ export class TransactionErrorDialog extends TwLitElement {
           </p>
         </div>
         <div slot="footer" class="w-full">
-          <ui-button color="primary" block size="xl" @click=${this._handleRetry}> Coba Lagi </ui-button>
+          <ui-button color="primary" block size="xl" @click=${this.handleRetry}> Coba Lagi </ui-button>
         </div>
       </ui-drawer>
     `

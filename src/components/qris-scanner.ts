@@ -58,7 +58,7 @@ export class QrisScanner extends TwLitElement {
     }, 300)
   }
 
-  private _onSheetResize(e: CustomEvent<{ height: number }>) {
+  private onSheetResize(e: CustomEvent<{ height: number }>) {
     this.bottomSheetHeight = e.detail.height
   }
 
@@ -307,11 +307,11 @@ export class QrisScanner extends TwLitElement {
   @query('#file-input')
   private fileInput!: HTMLInputElement
 
-  private _openGallery() {
+  private openGallery() {
     this.fileInput?.click()
   }
 
-  private async _onFileSelected(e: Event) {
+  private async onFileSelected(e: Event) {
     const target = e.target as HTMLInputElement
     const file = target.files?.[0]
     if (!file) return
@@ -336,8 +336,8 @@ export class QrisScanner extends TwLitElement {
     }
   }
 
-  private _tapCount = 0
-  private _tapTimer?: ReturnType<typeof setTimeout>
+  private tapCount = 0
+  private tapTimer?: ReturnType<typeof setTimeout>
 
   private clearFile() {
     if (this.fileInput) {
@@ -345,28 +345,28 @@ export class QrisScanner extends TwLitElement {
     }
   }
 
-  private _onHeaderTap() {
-    this._tapCount++
-    if (this._tapTimer) clearTimeout(this._tapTimer)
-    this._tapTimer = setTimeout(() => {
-      this._tapCount = 0
+  private onHeaderTap() {
+    this.tapCount++
+    if (this.tapTimer) clearTimeout(this.tapTimer)
+    this.tapTimer = setTimeout(() => {
+      this.tapCount = 0
     }, 500)
 
-    if (this._tapCount >= 3) {
-      this._tapCount = 0
+    if (this.tapCount >= 3) {
+      this.tapCount = 0
       this.toggleDebugLog()
     }
   }
 
-  private _onChangePaymentMethod() {
+  private onChangePaymentMethod() {
     this.logger.add('INFO', 'User clicked "Ubah" payment method')
   }
 
-  private _onShowQr() {
+  private onShowQr() {
     this.logger.add('INFO', 'User clicked "Tampilkan QR"')
   }
 
-  private _onQrisTap() {
+  private onQrisTap() {
     this.logger.add('INFO', 'User clicked "QRIS Tap"')
   }
 
@@ -443,7 +443,7 @@ export class QrisScanner extends TwLitElement {
       <div class="absolute inset-0 z-2 flex flex-col pointer-events-none">
         <div
           class="mx-auto mt-5 bg-strong/70 px-4 py-2.5 rounded-[40px] text-sm font-medium flex items-center gap-2 border border-white/25 pointer-events-auto cursor-pointer"
-          @click=${this._onHeaderTap}
+          @click=${this.onHeaderTap}
         >
           <p class="text-xs text-white font-semibold">Powered by</p>
           <img src=${qrisIcon} />
@@ -461,19 +461,19 @@ export class QrisScanner extends TwLitElement {
           </button>
           <button
             class="p-3 rounded-full bg-white flex items-center justify-center shadow-lg border-none cursor-pointer text-gray-700"
-            @click=${this._openGallery}
+            @click=${this.openGallery}
           >
             <img src=${galeryIcon} />
           </button>
-          <input type="file" id="file-input" accept="image/*" class="sr-only" @change=${this._onFileSelected} />
+          <input type="file" id="file-input" accept="image/*" class="sr-only" @change=${this.onFileSelected} />
         </div>
       </div>
 
       <payment-bottom-sheet
-        @change-payment-method=${this._onChangePaymentMethod}
-        @show-qr=${this._onShowQr}
-        @qris-tap=${this._onQrisTap}
-        @sheet-resize=${this._onSheetResize}
+        @change-payment-method=${this.onChangePaymentMethod}
+        @show-qr=${this.onShowQr}
+        @qris-tap=${this.onQrisTap}
+        @sheet-resize=${this.onSheetResize}
       ></payment-bottom-sheet>
 
       <transaction-error-dialog

@@ -26,11 +26,11 @@ export class DebugLogger extends TwLitElement implements ILogger {
     this.interceptErrors()
   }
 
-  private _intercepted = false
+  private intercepted = false
 
   private interceptConsole() {
-    if (this._intercepted) return
-    this._intercepted = true
+    if (this.intercepted) return
+    this.intercepted = true
 
     const originalLog = console.log
     const originalWarn = console.warn

@@ -7,16 +7,16 @@ export class PaymentSelectorDrawer extends TwLitElement {
   @state()
   private selectedMethod = 'linkaja'
 
-  private _onClose() {
+  private onClose() {
     this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }))
   }
 
-  private _onSelectMethod(method: string) {
-    if (method === 'gopay') return // Disabled
+  private onSelectMethod(method: string) {
+    if (method === 'gopay') return
     this.selectedMethod = method
   }
 
-  private _onSubmit() {
+  private onSubmit() {
     this.dispatchEvent(
       new CustomEvent('select', {
         detail: { method: this.selectedMethod },
@@ -24,16 +24,16 @@ export class PaymentSelectorDrawer extends TwLitElement {
         composed: true,
       }),
     )
-    this._onClose()
+    this.onClose()
   }
 
   protected render() {
     return html`
-      <ui-drawer direction="bottom" ?open=${this.open} @close=${this._onClose}>
+      <ui-drawer direction="bottom" ?open=${this.open} @close=${this.onClose}>
         <div slot="header" class="flex items-center justify-between px-4 py-4 pt-6">
           <h2 class="text-strong text-base font-semibold">Mau scan QRIS pakai apa?</h2>
           <button
-            @click=${this._onClose}
+            @click=${this.onClose}
             class="flex items-center justify-center size-8 rounded-full bg-page text-secondary cursor-pointer hover:bg-stroke border-none outline-none"
           >
             <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -45,7 +45,7 @@ export class PaymentSelectorDrawer extends TwLitElement {
         <div class="flex flex-col gap-0">
           <div
             class="flex items-center justify-between py-4 border-b border-stroke cursor-pointer"
-            @click=${() => this._onSelectMethod('linkaja')}
+            @click=${() => this.onSelectMethod('linkaja')}
           >
             <div class="flex items-center gap-3">
               <div
@@ -69,7 +69,7 @@ export class PaymentSelectorDrawer extends TwLitElement {
               value="linkaja"
               class="size-5 accent-[#00204A] cursor-pointer"
               .checked=${this.selectedMethod === 'linkaja'}
-              @change=${() => this._onSelectMethod('linkaja')}
+              @change=${() => this.onSelectMethod('linkaja')}
             />
           </div>
 
@@ -105,7 +105,7 @@ export class PaymentSelectorDrawer extends TwLitElement {
           <!-- DANA -->
           <div
             class="flex items-center justify-between py-4 border-b border-stroke cursor-pointer"
-            @click=${() => this._onSelectMethod('dana')}
+            @click=${() => this.onSelectMethod('dana')}
           >
             <div class="flex items-center gap-3">
               <div
@@ -129,7 +129,7 @@ export class PaymentSelectorDrawer extends TwLitElement {
               value="dana"
               class="size-5 accent-[#00204A] cursor-pointer"
               .checked=${this.selectedMethod === 'dana'}
-              @change=${() => this._onSelectMethod('dana')}
+              @change=${() => this.onSelectMethod('dana')}
             />
           </div>
         </div>
@@ -139,7 +139,7 @@ export class PaymentSelectorDrawer extends TwLitElement {
             color="destructive"
             block
             size="xl"
-            @click=${this._onSubmit}
+            @click=${this.onSubmit}
             class="shadow-lg"
             ui=${JSON.stringify({ base: 'rounded-full text-[15px]' })}
           >

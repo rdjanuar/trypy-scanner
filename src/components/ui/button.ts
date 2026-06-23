@@ -23,10 +23,10 @@ export class UiButton extends TwLitElement {
   @property({ type: String }) type: 'button' | 'submit' | 'reset' = 'button'
   @property({ type: Object }) ui: Partial<ButtonUi> = {}
 
-  @state() private _internalLoading = false
+  @state() private internalLoading = false
 
   private get _isPending() {
-    return this.loading || this._internalLoading
+    return this.loading || this.internalLoading
   }
 
   private async _handleClick(e: Event) {
@@ -37,7 +37,7 @@ export class UiButton extends TwLitElement {
     }
 
     if (this.loadingAuto) {
-      this._internalLoading = true
+      this.internalLoading = true
       try {
         const detail = { event: e, complete: Promise.resolve() }
         const customEvent = new CustomEvent('button-click', {
@@ -48,7 +48,7 @@ export class UiButton extends TwLitElement {
         this.dispatchEvent(customEvent)
         await detail.complete
       } finally {
-        this._internalLoading = false
+        this.internalLoading = false
       }
     }
   }
